@@ -113,6 +113,15 @@ Form portals reject uploads outside a byte range, so "make this photo fit in
 [`imageCompress.service.js`](../apps/api/src/services/imageCompress.service.js)
 resolves it in this order, cheapest and least destructive first:
 
+0. **A sane starting resolution**, before anything else. Answering "fit this in
+   100 KB" by encoding a 12 MP photo seven times is wasted work — no answer at
+   that resolution was ever going to fit. Each probe also decodes the full
+   image, which is what turned a slow request into an OOM kill on the free
+   instance. The working resolution is capped at ~20 px per target byte, which
+   costs nothing in quality (the search would have landed near there anyway)
+   and lets libvips use shrink-on-load so the full image is never decoded. On a
+   12 MP source this took a 100 KB request from 108 s to under 2 s, at *higher*
+   output resolution than before.
 1. **Quality**, by binary search over the encoder's quality setting for the
    highest value that still fits. Roughly seven encodes, and it usually ends
    here.

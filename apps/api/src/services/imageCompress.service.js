@@ -25,6 +25,24 @@ const MAX_QUALITY = 95;
 const MAX_DOWNSCALE_ROUNDS = 6;
 const MIN_DIMENSION = 40;
 
+/**
+ * Pixel budget per byte of target size, used to pick a starting resolution.
+ *
+ * Answering "fit this in 100 KB" by encoding a 12 MP photo seven times is
+ * pointless: no answer at that resolution was ever going to fit, so every
+ * probe is wasted. Worse, each one decodes the full image — on a 512 MB
+ * instance that is what turns a slow request into an OOM kill and a restart.
+ *
+ * Capping the working resolution first costs nothing in quality, because the
+ * search would have downscaled to roughly here anyway. Empirically a 100 KB
+ * JPEG lands near 0.9 MP, so 20 px/byte (2 MP at 100 KB) leaves generous
+ * headroom for the search to find a better answer than the cap.
+ *
+ * It also lets libvips use shrink-on-load: with a resize in the pipeline the
+ * full-size image is never decoded at all.
+ */
+const WORKING_PIXELS_PER_BYTE = 20;
+
 const FORMATS = {
   jpg: { ext: 'jpg', lossy: true },
   jpeg: { ext: 'jpg', lossy: true },
@@ -86,6 +104,22 @@ async function searchQuality(makePipeline, ext, targetBytes) {
   }
 
   return { best, bestQuality, smallest };
+}
+
+/**
+ * Starting scale for the quality search. 1 means "work at full resolution".
+ *
+ * Explicit dimensions already bound the work, so they are left alone.
+ */
+function initialScale(metadata, targetBytes, resize) {
+  if (resize) return 1;
+
+  const sourcePixels = metadata.width * metadata.height;
+  const budget = targetBytes * WORKING_PIXELS_PER_BYTE;
+
+  if (sourcePixels <= budget) return 1;
+
+  return Math.sqrt(budget / sourcePixels);
 }
 
 function buildResize(maxWidth, maxHeight, fit) {
@@ -184,7 +218,7 @@ async function compressToTarget({
     throw AppError.badRequest('The minimum size cannot be larger than the maximum size.');
   }
 
-  let scale = 1;
+  let scale = initialScale(metadata, targetBytes, resize);
   let result = null;
   let quality = 0;
   let rounds = 0;
@@ -285,4 +319,4 @@ async function compressToTarget({
   }
 }
 
-module.exports = { compressToTarget, MIN_QUALITY, MAX_QUALITY };
+module.exports = { compressToTarget, initialScale, MIN_QUALITY, MAX_QUALITY, WORKING_PIXELS_PER_BYTE };

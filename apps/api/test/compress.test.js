@@ -209,6 +209,30 @@ test('rejects a minimum larger than the maximum', async () => {
   assert.match(body.error.message, /minimum size cannot be larger/i);
 });
 
+test('a phone-sized photo is not processed at full resolution', () => {
+  const { initialScale, WORKING_PIXELS_PER_BYTE } = require('../src/services/imageCompress.service');
+
+  // Regression: a 12 MP photo with no requested dimensions used to be decoded
+  // at full size on every probe of the quality search. On a 512 MB instance
+  // that OOM-killed the container rather than merely being slow.
+  const phone = { width: 4000, height: 3000 };
+  const scale = initialScale(phone, 100 * 1024, null);
+
+  assert.ok(scale < 1, 'a 12 MP source must be scaled down before searching');
+
+  const workingPixels = phone.width * phone.height * scale * scale;
+  assert.ok(
+    workingPixels <= 100 * 1024 * WORKING_PIXELS_PER_BYTE * 1.01,
+    `working resolution not bounded: ${Math.round(workingPixels / 1e6)} MP`
+  );
+
+  // Small sources, and any request with explicit dimensions, are left alone.
+  assert.equal(initialScale({ width: 800, height: 600 }, 100 * 1024, null), 1);
+  assert.equal(initialScale(phone, 100 * 1024, { width: 200, height: 230 }), 1);
+  // A generous target should not trigger pointless downscaling either.
+  assert.equal(initialScale(phone, 5 * 1024 * 1024, null), 1);
+});
+
 test('rejects a missing or nonsensical target size', async () => {
   const photo = await noisyPhoto(100, 100);
 
