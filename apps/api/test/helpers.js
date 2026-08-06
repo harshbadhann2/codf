@@ -1,24 +1,30 @@
 'use strict';
 
-process.env.NODE_ENV = 'test';
-process.env.LOG_LEVEL = 'silent';
-process.env.TRUST_PROXY = '0';
-
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
 
-// Every run gets its own scratch dir so tests never see each other's files.
-const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codf-test-'));
-process.env.WORK_DIR = workDir;
+process.env.NODE_ENV = 'test';
+process.env.LOG_LEVEL = 'silent';
+process.env.TRUST_PROXY = '0';
 
-const { app } = require('../src/app');
+// Each test process gets its own scratch directory so runs never see each
+// other's files. The path is only computed here — `src/app` creates it, and
+// `stopServer` removes it. Nothing happens merely by importing this module,
+// because Node's test runner treats every file under test/ as a test file and
+// will execute this one on its own.
+process.env.WORK_DIR = path.join(os.tmpdir(), `codf-test-${process.pid}-${Date.now()}`);
 
+let app;
 let server;
 let baseUrl;
 
 async function startServer() {
   if (server) return baseUrl;
+
+  // Required lazily: loading the app reads env vars set above and creates the
+  // work directory, neither of which should happen at import time.
+  ({ app } = require('../src/app'));
 
   await new Promise((resolve) => {
     server = app.listen(0, '127.0.0.1', resolve);
@@ -29,10 +35,12 @@ async function startServer() {
 }
 
 async function stopServer() {
-  if (!server) return;
-  await new Promise((resolve) => server.close(resolve));
-  server = undefined;
-  fs.rmSync(workDir, { recursive: true, force: true });
+  if (server) {
+    await new Promise((resolve) => server.close(resolve));
+    server = undefined;
+  }
+
+  fs.rmSync(process.env.WORK_DIR, { recursive: true, force: true });
 }
 
 async function request(pathname, options = {}) {
@@ -60,4 +68,4 @@ function filePost(pathname, { fileName, contents, type = 'application/octet-stre
   return request(pathname, { method: 'POST', body: form });
 }
 
-module.exports = { startServer, stopServer, request, jsonPost, filePost, workDir };
+module.exports = { startServer, stopServer, request, jsonPost, filePost };
