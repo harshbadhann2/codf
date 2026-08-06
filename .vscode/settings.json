@@ -1,0 +1,16 @@
+{
+  "editor.formatOnSave": false,
+  "files.eol": "\n",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/venv": true
+  },
+  "eslint.workingDirectories": [
+    { "directory": "apps/api", "changeProcessCWD": true },
+    { "directory": "apps/web", "changeProcessCWD": true }
+  ],
+  "[python]": {
+    "editor.tabSize": 4
+  }
+}

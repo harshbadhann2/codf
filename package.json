@@ -1,0 +1,20 @@
+{
+  "name": "codf",
+  "version": "2.0.0",
+  "private": true,
+  "description": "coDF — student utility converter. React/Vite frontend on Vercel, Node/Express API on Render.",
+  "engines": {
+    "node": ">=20"
+  },
+  "//": "Deliberately NOT an npm workspace. Each app keeps its own lockfile because each is built in isolation: Vercel builds apps/web with its root directory set there, and the Docker build context is apps/api. A hoisted root lockfile would leave both without one.",
+  "scripts": {
+    "install:all": "npm install --prefix apps/api && npm install --prefix apps/web",
+    "dev:api": "npm run dev --prefix apps/api",
+    "dev:web": "npm run dev --prefix apps/web",
+    "build": "npm run build --prefix apps/web",
+    "test": "npm test --prefix apps/api",
+    "lint": "npm run lint --prefix apps/api && npm run lint --prefix apps/web",
+    "docker:build": "docker build -t codf-api:local ./apps/api",
+    "docker:run": "docker run --rm -p 3030:3030 -e CLIENT_ORIGIN=http://localhost:3000 codf-api:local"
+  }
+}

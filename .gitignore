@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+dist/
+build/
+.vercel/
+
+# env — never commit real values; .env.example files are tracked
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.development
+
+# python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# runtime scratch
+uploads/
+outputs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# tooling
+.eslintcache
+coverage/
+
+# editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+*.swp

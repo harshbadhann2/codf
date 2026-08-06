@@ -1,0 +1,81 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# Deploy: Render Dashboard → New → Blueprint → pick this repo.
+# Render reads this file from the repo root and creates the service.
+#
+# AFTER the first deploy you MUST set CLIENT_ORIGIN to your Vercel URL
+# (see the `sync: false` note below), otherwise the browser will block every
+# request from the frontend with a CORS error.
+
+services:
+  - type: web
+    name: codf-api
+    runtime: docker
+    plan: free
+    region: oregon
+
+    # Paths are relative to the repository root.
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+
+    # Render restarts the service if this stops returning 2xx.
+    healthCheckPath: /api/health/ping
+
+    autoDeploy: true
+
+    # Only rebuild when the API actually changes — frontend commits should not
+    # burn a Render build or restart the service.
+    buildFilter:
+      paths:
+        - apps/api/**
+        - render.yaml
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Render injects PORT at runtime; the app binds to it. Do not hard-code it.
+
+      # ── Set this in the dashboard after your first Vercel deploy ──────────
+      # sync: false means "prompt me, don't store it in git".
+      # Format: https://your-app.vercel.app  (no trailing slash, no /api)
+      # Multiple origins are comma separated.
+      - key: CLIENT_ORIGIN
+        sync: false
+
+      # Also allow Vercel preview deployments (https://*.vercel.app).
+      - key: ALLOW_VERCEL_PREVIEWS
+        value: "true"
+
+      # Render terminates TLS one hop in front of the app.
+      - key: TRUST_PROXY
+        value: "1"
+
+      - key: LIBREOFFICE_PATH
+        value: /usr/bin/soffice
+      - key: PYTHON_PATH
+        value: /opt/venv/bin/python3
+      - key: WORK_DIR
+        value: /var/tmp/codf
+
+      - key: MAX_FILE_SIZE_MB
+        value: "10"
+      - key: MAX_CODE_CHARS
+        value: "300000"
+      - key: PDF_TO_DOCX_MAX_PAGES
+        value: "60"
+      - key: FILE_TTL_MS
+        value: "900000"
+
+      - key: RATE_LIMIT_MAX
+        value: "300"
+      - key: CONVERT_RATE_LIMIT_MAX
+        value: "60"
+
+      # The free instance has 512 MB. Two concurrent LibreOffice or PyMuPDF
+      # processes will get the container OOM-killed, so heavy jobs are queued.
+      - key: MAX_CONCURRENT_JOBS
+        value: "1"
+
+      - key: LOG_LEVEL
+        value: "info"

@@ -1,0 +1,14 @@
+# PDF -> DOCX engine.
+#
+# pdf2docx is pinned exactly so a surprise upstream release can't break a
+# deploy. Its dependencies are given as ranges: pinning transitive packages
+# exactly tends to produce unsolvable resolutions on the next security bump.
+pdf2docx==0.5.13
+
+# Declared explicitly because these are the memory-heavy ones and we want the
+# resolver to pick known-good majors rather than whatever is newest.
+PyMuPDF>=1.24,<2.0
+python-docx>=1.1,<2.0
+opencv-python-headless>=4.9,<5.0
+numpy>=1.26,<3.0
+fonttools>=4.50

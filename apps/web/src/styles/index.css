@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-main: #f7f4ec;
+  --bg-soft: #fefdf8;
+  --text-main: #1f2937;
+  --text-muted: #56637a;
+  --card: #fffefc;
+  --line: #e7dfcf;
+  --accent: #0f766e;
+}
+
+:root.dark {
+  --bg-main: #0b1220;
+  --bg-soft: #131c2e;
+  --text-main: #f1f5f9;
+  --text-muted: #a3b1c6;
+  --card: #162033;
+  --line: #2b3850;
+  --accent: #2dd4bf;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(249, 115, 22, 0.14), transparent 38%),
+    radial-gradient(circle at 92% 5%, rgba(20, 184, 166, 0.16), transparent 38%),
+    linear-gradient(180deg, var(--bg-soft), var(--bg-main));
+  background-attachment: fixed;
+}
+
+.codf-shell {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.58));
+}
+
+.dark .codf-shell {
+  background: linear-gradient(180deg, rgba(19, 28, 46, 0.85), rgba(11, 18, 32, 0.7));
+}
+
+/* Consistent focus ring across every interactive control. */
+.focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

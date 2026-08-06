@@ -1,0 +1,47 @@
+name: Keep API awake
+
+# Render's free tier stops a web service after ~15 minutes with no traffic, and
+# the next request pays a 30-60 second cold start. Pinging just inside that
+# window keeps the service warm during the day.
+#
+# SETUP: add a repository variable named API_URL (Settings → Secrets and
+# variables → Actions → Variables) set to your Render URL, e.g.
+#   https://codf-api.onrender.com
+# Without it this workflow skips itself instead of failing.
+#
+# NOTE: free instances also have a monthly compute quota. This schedule is
+# limited to daytime hours so the pings do not burn the whole month's budget
+# keeping the server up while nobody is using it.
+
+on:
+  schedule:
+    # Every 14 minutes, 06:00-20:00 UTC. Cron here is best-effort — GitHub
+    # delays scheduled runs under load, which is fine for a warm-up ping.
+    - cron: '*/14 6-20 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping /api/health/ping
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping
+        env:
+          API_URL: ${{ vars.API_URL }}
+        run: |
+          if [ -z "$API_URL" ]; then
+            echo "::notice::API_URL repository variable is not set — skipping."
+            exit 0
+          fi
+
+          # A sleeping instance takes a while to answer the first request, so
+          # allow a generous timeout and a couple of retries before giving up.
+          if curl -fsS --max-time 90 --retry 2 --retry-delay 15 \
+               "${API_URL%/}/api/health/ping"; then
+            echo ""
+            echo "API is awake."
+          else
+            echo "::warning::Ping failed. The service may be suspended or redeploying."
+          fi
