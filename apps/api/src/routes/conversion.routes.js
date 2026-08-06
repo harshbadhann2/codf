@@ -10,7 +10,8 @@ const {
   codeFileToPdfController,
   docxToPdfController,
   pdfToDocxController,
-  imageConvertController
+  imageConvertController,
+  imageCompressController
 } = require('../controllers/conversion.controller');
 
 const router = express.Router();
@@ -38,5 +39,7 @@ router.post(
 );
 
 router.post('/image', uploadSingle, validateUploadedFile('image'), imageConvertController);
+
+router.post('/image-compress', uploadSingle, validateUploadedFile('image'), imageCompressController);
 
 module.exports = { conversionRouter: router };

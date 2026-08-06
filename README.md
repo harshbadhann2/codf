@@ -68,6 +68,7 @@ The response reports which conversions this deployment can actually perform, and
 - **Word → PDF** — headless LibreOffice, with Liberation fonts so Microsoft-font documents keep their pagination.
 - **PDF → Word** — `pdf2docx`, preserving tables and layout where the source PDF allows it.
 - **Images** — JPG / PNG / WebP in any direction via Sharp, with EXIF rotation applied and transparency flattened for JPG.
+- **Resize for forms** — compress a photo to fit an upload limit ("must be under 100 KB"), optionally at exact pixel dimensions. Handles the *range* case too ("between 20 KB and 50 KB"), which is what exam boards and admission portals actually ask for.
 - Dark mode, drag-and-drop, upload progress, cancellable conversions.
 
 ## How it stays up on a free instance
@@ -92,6 +93,7 @@ Base URL: `https://<your-api>/api`
 | `POST` | `/convert/docx-to-pdf` | multipart: `file` | Needs LibreOffice |
 | `POST` | `/convert/pdf-to-docx` | multipart: `file` | Needs Python + pdf2docx |
 | `POST` | `/convert/image` | multipart: `file`, `targetFormat` (`png`\|`jpg`\|`webp`), `quality?` | |
+| `POST` | `/convert/image-compress` | multipart: `file`, `targetKb`, `minKb?`, `width?`, `height?`, `fit?` (`cover`\|`inside`), `format?` | Compress to a size limit |
 | `GET` | `/files/:fileName?name=<download-name>` | — | Streams the result |
 
 Success:

@@ -36,3 +36,7 @@ export function convertPdfToDocx(file, options) {
 export function convertImage(file, fields, options) {
   return apiPostForm('/convert/image', formDataFor(file, fields), options);
 }
+
+export function compressImage(file, fields, options) {
+  return apiPostForm('/convert/image-compress', formDataFor(file, fields), options);
+}

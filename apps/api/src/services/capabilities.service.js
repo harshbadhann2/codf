@@ -160,6 +160,7 @@ async function getCapabilities(options) {
   return {
     codeToPdf: { available: true, reason: '' },
     imageConvert: { available: true, reason: '' },
+    imageCompress: { available: true, reason: '' },
     docxToPdf: {
       available: libreOffice.available,
       reason: libreOffice.reason,

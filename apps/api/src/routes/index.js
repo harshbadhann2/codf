@@ -28,6 +28,7 @@ router.get('/', (_req, res) => {
         docxToPdf: 'POST /api/convert/docx-to-pdf',
         pdfToDocx: 'POST /api/convert/pdf-to-docx',
         image: 'POST /api/convert/image',
+        imageCompress: 'POST /api/convert/image-compress',
         download: 'GET /api/files/:fileName'
       }
     }

@@ -15,6 +15,7 @@ const { generateCodePdf } = require('../services/codePdf.service');
 const { parseCodeFile } = require('../services/codeFile.service');
 const { convertDocxToPdf, convertPdfToDocx } = require('../services/document.service');
 const { convertImage } = require('../services/image.service');
+const { compressToTarget } = require('../services/imageCompress.service');
 
 /**
  * Builds the response payload for a finished conversion.
@@ -143,6 +144,66 @@ const imageConvertController = asyncHandler(async (req, res) => {
   });
 });
 
+/** Parses an optional positive integer form field, rejecting junk explicitly. */
+function optionalInt(value, { field, min, max }) {
+  if (value === undefined || value === null || value === '') return null;
+
+  const parsed = Number.parseInt(value, 10);
+
+  if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
+    throw AppError.badRequest(`${field} must be a whole number between ${min} and ${max}.`);
+  }
+
+  return parsed;
+}
+
+const imageCompressController = asyncHandler(async (req, res) => {
+  const baseName = originalBaseName(req);
+  const maxTargetKb = env.maxFileSizeMb * 1024;
+
+  const targetKb = optionalInt(req.body.targetKb, { field: 'targetKb', min: 1, max: maxTargetKb });
+
+  if (!targetKb) {
+    throw AppError.badRequest('Tell us the maximum size you need, in KB.');
+  }
+
+  const minKb = optionalInt(req.body.minKb, { field: 'minKb', min: 1, max: maxTargetKb });
+  const width = optionalInt(req.body.width, { field: 'width', min: 16, max: 10000 });
+  const height = optionalInt(req.body.height, { field: 'height', min: 16, max: 10000 });
+
+  if (minKb && minKb > targetKb) {
+    throw AppError.badRequest('The minimum size cannot be larger than the maximum size.');
+  }
+
+  const result = await withUpload(req, 'image-compress', (uploadedPath) =>
+    compressToTarget({
+      inputPath: uploadedPath,
+      targetBytes: targetKb * 1024,
+      minBytes: minKb ? minKb * 1024 : null,
+      format: req.body.format || 'jpg',
+      maxWidth: width,
+      maxHeight: height,
+      fit: req.body.fit,
+      originalBaseName: baseName
+    })
+  );
+
+  finish(req, res, result, {
+    bytes: result.bytes,
+    originalBytes: result.originalBytes,
+    targetBytes: targetKb * 1024,
+    width: result.width,
+    height: result.height,
+    originalWidth: result.originalWidth,
+    originalHeight: result.originalHeight,
+    quality: result.quality,
+    downscaled: result.downscaled,
+    withinTarget: result.withinTarget,
+    padded: result.padded,
+    minBytes: minKb ? minKb * 1024 : null
+  });
+});
+
 const downloadFileController = asyncHandler(async (req, res) => {
   const outputPath = resolveOutputFilePath(req.params.fileName);
   const stats = await fsp.stat(outputPath).catch(() => null);
@@ -184,6 +245,7 @@ const downloadFileController = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  imageCompressController,
   codeToPdfController,
   codeFileToPdfController,
   docxToPdfController,

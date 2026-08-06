@@ -106,6 +106,37 @@ Output names are server-generated UUIDs validated against a strict regex, and th
 
 ---
 
+## Hitting a file-size target
+
+Form portals reject uploads outside a byte range, so "make this photo fit in
+50 KB" is a real constraint, not a preference.
+[`imageCompress.service.js`](../apps/api/src/services/imageCompress.service.js)
+resolves it in this order, cheapest and least destructive first:
+
+1. **Quality**, by binary search over the encoder's quality setting for the
+   highest value that still fits. Roughly seven encodes, and it usually ends
+   here.
+2. **Pixels**, only when quality alone cannot get there. Encoded size tracks
+   pixel count, so the next scale factor is estimated as
+   `sqrt(target / achieved)` rather than stepped down blindly — that converges
+   in one or two rounds instead of ten. Quality has a floor of 20 because
+   below it a passport photo is unusable, and a smaller sharp image beats a
+   full-size smeared one.
+3. **Metadata**, when a *minimum* is specified and the picture legitimately
+   encodes below it. Quality climbs to 100 with 4:4:4 chroma first; if that is
+   still short, padding goes into a JPEG `COM` segment or a PNG `tEXt` chunk —
+   standard containers, so the file stays fully valid rather than carrying
+   junk after the end-of-image marker, which a strict validator may reject.
+
+Each of the three is reported back (`quality`, `downscaled`, `padded`) so the
+UI can explain what happened instead of silently handing over a photo that is
+smaller than the one the user chose.
+
+`downscaled` deliberately means "the size target forced us below the requested
+dimensions", not "the output is smaller than the input" — resizing to the
+dimensions someone explicitly asked for is the job, and flagging it as a
+problem sends them off to fix something that is not broken.
+
 ## Upload validation
 
 Three independent checks, because the first two are attacker-controlled:

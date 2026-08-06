@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import CodePanel from './components/CodePanel';
 import DocumentPanel from './components/DocumentPanel';
 import ImagePanel from './components/ImagePanel';
+import CompressPanel from './components/CompressPanel';
 import ResultCard from './components/ResultCard';
 import ServerStatusBanner from './components/ServerStatusBanner';
 import Spinner from './components/Spinner';
@@ -15,13 +16,15 @@ import {
   convertCodeToPdf,
   convertDocxToPdf,
   convertImage,
-  convertPdfToDocx
+  convertPdfToDocx,
+  compressImage
 } from './api/conversions';
 
 const TABS = [
   { id: 'code', label: 'Code → PDF' },
   { id: 'document', label: 'Word ↔ PDF' },
-  { id: 'image', label: 'Image formats' }
+  { id: 'image', label: 'Image formats' },
+  { id: 'compress', label: 'Resize for forms' }
 ];
 
 const FALLBACK_MAX_FILE_SIZE_MB = Number(import.meta.env.VITE_MAX_FILE_SIZE_MB || 10);
@@ -122,6 +125,11 @@ export default function App() {
     run('image', () => convertImage(file, { targetFormat }, { onProgress: setProgress }));
   }
 
+  function handleCompressSubmit({ file, fields, extensions }) {
+    if (!guardFile(file, extensions)) return;
+    run('compress', () => compressImage(file, fields, { onProgress: setProgress }));
+  }
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="codf-shell animate-rise rounded-3xl border border-[var(--line)] p-5 shadow-panel backdrop-blur md:p-8">
@@ -197,6 +205,10 @@ export default function App() {
 
             {activeTab === 'image' && (
               <ImagePanel onSubmit={handleImageSubmit} isBusy={isBusy} maxFileSizeMb={maxFileSizeMb} />
+            )}
+
+            {activeTab === 'compress' && (
+              <CompressPanel onSubmit={handleCompressSubmit} isBusy={isBusy} maxFileSizeMb={maxFileSizeMb} />
             )}
           </section>
 
