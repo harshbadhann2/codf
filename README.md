@@ -66,7 +66,7 @@ The response reports which conversions this deployment can actually perform, and
 
 - **Code → PDF** — syntax highlighting for 190+ languages via highlight.js, rendered with JetBrains Mono, with line numbers, a title/subtitle block, and page footers. Accepts pasted code or an uploaded file, including Jupyter notebooks (`.ipynb`, flattened with markdown cells as comments).
 - **Word → PDF** — headless LibreOffice, with Liberation fonts so Microsoft-font documents keep their pagination.
-- **PDF → Word** — `pdf2docx`, preserving tables and layout where the source PDF allows it.
+- **PDF → Word** — two engines. The default rebuilds the document as real Word content (headings, paragraphs, bullet lists, tab stops, section rules), which is both editable and the only option that survives LaTeX-produced PDFs. `mode=layout` switches to `pdf2docx`, which reproduces page positioning and is better for forms and dense tables.
 - **Images** — JPG / PNG / WebP in any direction via Sharp, with EXIF rotation applied and transparency flattened for JPG.
 - **Resize for forms** — compress a photo to fit an upload limit ("must be under 100 KB"), optionally at exact pixel dimensions. Handles the *range* case too ("between 20 KB and 50 KB"), which is what exam boards and admission portals actually ask for.
 - Dark mode, drag-and-drop, upload progress, cancellable conversions.
@@ -91,7 +91,7 @@ Base URL: `https://<your-api>/api`
 | `POST` | `/convert/code-to-pdf` | JSON: `code`, `filename?`, `language?`, `title?`, `section?` | |
 | `POST` | `/convert/code-file-to-pdf` | multipart: `file` + the same optional fields | |
 | `POST` | `/convert/docx-to-pdf` | multipart: `file` | Needs LibreOffice |
-| `POST` | `/convert/pdf-to-docx` | multipart: `file` | Needs Python + pdf2docx |
+| `POST` | `/convert/pdf-to-docx` | multipart: `file`, `mode?` (`text` default \| `layout`) | Needs Python |
 | `POST` | `/convert/image` | multipart: `file`, `targetFormat` (`png`\|`jpg`\|`webp`), `quality?` | |
 | `POST` | `/convert/image-compress` | multipart: `file`, `targetKb`, `minKb?`, `width?`, `height?`, `fit?` (`cover`\|`inside`), `format?` | Compress to a size limit |
 | `GET` | `/files/:fileName?name=<download-name>` | — | Streams the result |

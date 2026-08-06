@@ -113,11 +113,15 @@ export default function App() {
     );
   }
 
-  function handleDocumentSubmit({ mode, file, extensions }) {
+  function handleDocumentSubmit({ mode, file, extensions, engine }) {
     if (!guardFile(file, extensions)) return;
 
-    const convert = mode === 'docx-to-pdf' ? convertDocxToPdf : convertPdfToDocx;
-    run('document', () => convert(file, { onProgress: setProgress }));
+    if (mode === 'docx-to-pdf') {
+      run('document', () => convertDocxToPdf(file, { onProgress: setProgress }));
+      return;
+    }
+
+    run('document', () => convertPdfToDocx(file, { mode: engine }, { onProgress: setProgress }));
   }
 
   function handleImageSubmit({ file, targetFormat, extensions }) {

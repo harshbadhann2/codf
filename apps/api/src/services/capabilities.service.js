@@ -95,10 +95,12 @@ async function probeLibreOffice() {
 }
 
 async function probePython() {
-  const script = path.join(env.scriptDir, 'pdf_to_docx.py');
+  // Probes the default engine. Both scripts ship together and share their
+  // dependencies, so one working means the feature works.
+  const script = path.join(env.scriptDir, 'pdf_to_docx_text.py');
 
   if (!fs.existsSync(script)) {
-    return { available: false, binary: '', version: '', reason: 'pdf_to_docx.py is missing from the image.' };
+    return { available: false, binary: '', version: '', reason: 'pdf_to_docx_text.py is missing from the image.' };
   }
 
   for (const candidate of pythonCandidates()) {

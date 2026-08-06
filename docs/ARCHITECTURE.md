@@ -146,6 +146,40 @@ dimensions", not "the output is smaller than the input" — resizing to the
 dimensions someone explicitly asked for is the job, and flagging it as a
 problem sends them off to fix something that is not broken.
 
+## PDF → Word: two engines
+
+`pdf2docx` rebuilds a page out of absolutely positioned frames and tables. That
+is the right model for a form, and the wrong one for a resume — the output is a
+picture of a document rather than a document.
+
+It also fails outright on LaTeX PDFs, which is what most student resumes are.
+TeX positions each word individually instead of emitting space characters, and
+pdf2docx's word handling drops them, so a resume converts to
+`ComputerScienceundergraduate`. Not degraded — unusable.
+
+[`pdf_to_docx_text.py`](../apps/api/scripts/pdf_to_docx_text.py) is the default
+because of that. It reads PyMuPDF's structured extraction, which reconstructs
+the spacing correctly and also carries font weight, size, colour and geometry,
+then rebuilds the document as genuine Word content:
+
+- **Rows before paragraphs.** Lines sharing a baseline are grouped into one
+  visual row, then split into columns on wide horizontal gaps. That is what
+  turns `Job Title                    2023 – 2027` into a paragraph with a
+  right-aligned tab stop instead of two stray lines.
+- **Wrapped lines rejoin.** A line that ran to the right margin and continues
+  at the same indent is folded into the paragraph before it, so the result
+  reflows when edited. A trailing hyphen joins without a space: most such
+  breaks are real compounds (`back-end`, `problem-solving`), and telling those
+  apart from a hyphenated single word needs a dictionary.
+- **Headings from rules.** A bold row with a full-width rule drawn just below is
+  a section heading, and the rule is redrawn as a paragraph border.
+- **Bullets become lists.** The marker glyph and its trailing space are dropped
+  across spans — they are usually separate spans — so Word supplies its own.
+- **Images are placed inline** at their vertical position, rather than silently
+  vanishing along with every figure in the document.
+
+`mode=layout` still routes to pdf2docx for the cases it genuinely wins.
+
 ## Upload validation
 
 Three independent checks, because the first two are attacker-controlled:

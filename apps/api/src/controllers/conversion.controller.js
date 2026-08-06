@@ -117,11 +117,13 @@ const docxToPdfController = asyncHandler(async (req, res) => {
 const pdfToDocxController = asyncHandler(async (req, res) => {
   const baseName = originalBaseName(req);
 
+  const mode = req.body.mode === 'layout' ? 'layout' : 'text';
+
   const result = await withUpload(req, 'pdf-to-docx', (uploadedPath) =>
-    convertPdfToDocx({ inputPath: uploadedPath, originalBaseName: baseName })
+    convertPdfToDocx({ inputPath: uploadedPath, originalBaseName: baseName, mode })
   );
 
-  finish(req, res, result);
+  finish(req, res, result, { mode });
 });
 
 const imageConvertController = asyncHandler(async (req, res) => {

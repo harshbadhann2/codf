@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import Dropzone from './Dropzone';
-import { SubmitButton } from './Field';
+import { SelectField, SubmitButton } from './Field';
 
 const MODES = [
   { id: 'docx-to-pdf', label: 'Word → PDF', accept: '.docx', capability: 'docxToPdf', extensions: ['.docx'] },
   { id: 'pdf-to-docx', label: 'PDF → Word', accept: '.pdf', capability: 'pdfToDocx', extensions: ['.pdf'] }
 ];
 
+const PDF_ENGINES = [
+  { value: 'text', label: 'Editable document — recommended' },
+  { value: 'layout', label: 'Match the original layout' }
+];
+
 export default function DocumentPanel({ onSubmit, isBusy, maxFileSizeMb, can, reasonFor, maxPdfPages }) {
   const [mode, setMode] = useState('docx-to-pdf');
+  const [engine, setEngine] = useState('text');
   const [file, setFile] = useState(null);
 
   const active = MODES.find((entry) => entry.id === mode);
@@ -18,7 +24,7 @@ export default function DocumentPanel({ onSubmit, isBusy, maxFileSizeMb, can, re
   function handleSubmit(event) {
     event.preventDefault();
     if (!file || isBusy || !isAvailable) return;
-    onSubmit({ mode, file, extensions: active.extensions });
+    onSubmit({ mode, file, extensions: active.extensions, engine });
   }
 
   return (
@@ -56,6 +62,20 @@ export default function DocumentPanel({ onSubmit, isBusy, maxFileSizeMb, can, re
           <p className="font-semibold text-amber-900 dark:text-amber-100">This conversion is not available right now</p>
           <p className="mt-1 text-amber-800 dark:text-amber-200/80">{unavailableReason}</p>
         </div>
+      )}
+
+      {mode === 'pdf-to-docx' && isAvailable && (
+        <SelectField
+          label="How should it convert?"
+          value={engine}
+          onChange={setEngine}
+          options={PDF_ENGINES}
+          hint={
+            engine === 'text'
+              ? 'Rebuilds real headings, paragraphs and bullet lists, so the result is easy to edit. Best for resumes, reports and essays.'
+              : 'Keeps text where it sits on the page using text boxes and tables. Better for forms and dense tables, harder to edit afterwards.'
+          }
+        />
       )}
 
       <Dropzone

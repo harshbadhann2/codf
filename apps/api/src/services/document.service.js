@@ -106,11 +106,28 @@ async function convertDocxToPdf({ inputPath, originalBaseName }) {
   }
 }
 
-/** PDF -> Word (.docx) via the pdf2docx Python subprocess. */
-async function convertPdfToDocx({ inputPath, originalBaseName }) {
+// Two engines, because they fail in opposite directions.
+//
+// `text` rebuilds the document from PyMuPDF's structured extraction as real
+// Word content — headings, paragraphs, bullets, tab stops. It is the default
+// because the common job is a resume or a report, and it is the only one that
+// survives LaTeX output: TeX positions words individually rather than emitting
+// spaces, and pdf2docx returns "ComputerScienceundergraduate".
+//
+// `layout` is pdf2docx, which reconstructs the page with absolutely positioned
+// frames and tables. Better for forms and dense tables, worse to edit.
+const PDF_TO_DOCX_ENGINES = {
+  text: 'pdf_to_docx_text.py',
+  layout: 'pdf_to_docx.py'
+};
+
+/** PDF -> Word (.docx). `mode` selects the engine; see PDF_TO_DOCX_ENGINES. */
+async function convertPdfToDocx({ inputPath, originalBaseName, mode }) {
   const python = await requirePython();
   ensureWorkspace();
-  const script = path.join(env.scriptDir, 'pdf_to_docx.py');
+
+  const engine = PDF_TO_DOCX_ENGINES[mode] || PDF_TO_DOCX_ENGINES.text;
+  const script = path.join(env.scriptDir, engine);
   const outputFileName = `${randomUUID()}.docx`;
   const outputPath = path.join(env.outputDir, outputFileName);
 
@@ -181,4 +198,4 @@ function extractScriptError(stderr) {
   }
 }
 
-module.exports = { convertDocxToPdf, convertPdfToDocx };
+module.exports = { convertDocxToPdf, convertPdfToDocx, PDF_TO_DOCX_ENGINES };

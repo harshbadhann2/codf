@@ -29,8 +29,8 @@ export function convertDocxToPdf(file, options) {
   return apiPostForm('/convert/docx-to-pdf', formDataFor(file), options);
 }
 
-export function convertPdfToDocx(file, options) {
-  return apiPostForm('/convert/pdf-to-docx', formDataFor(file), options);
+export function convertPdfToDocx(file, fields, options) {
+  return apiPostForm('/convert/pdf-to-docx', formDataFor(file, fields), options);
 }
 
 export function convertImage(file, fields, options) {
