@@ -4,7 +4,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm ci",
-  "cleanUrls": true,
+  "//": "cleanUrls is deliberately off: it redirects /index.html to /, which breaks the SPA rewrite below (the rewrite's destination stops resolving and every deep link 404s). It buys nothing here anyway — there is only one HTML file.",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
     {
