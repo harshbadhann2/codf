@@ -9,6 +9,7 @@ const { logger } = require('../utils/logger');
 const { runCommand } = require('../utils/runCommand');
 const { sanitizeBaseName } = require('../utils/sanitizeFilename');
 const { safeUnlink, safeRemoveDir } = require('../utils/fileCleanup');
+const { ensureWorkspace } = require('../utils/workspace');
 const { getCapability } = require('./capabilities.service');
 
 async function requireLibreOffice() {
@@ -40,6 +41,7 @@ async function requirePython() {
  */
 async function convertDocxToPdf({ inputPath, originalBaseName }) {
   const binary = await requireLibreOffice();
+  ensureWorkspace();
   const runId = randomUUID();
   const tempDir = path.join(env.workDir, `lo-${runId}`);
   const profileDir = path.join(tempDir, 'profile');
@@ -107,6 +109,7 @@ async function convertDocxToPdf({ inputPath, originalBaseName }) {
 /** PDF -> Word (.docx) via the pdf2docx Python subprocess. */
 async function convertPdfToDocx({ inputPath, originalBaseName }) {
   const python = await requirePython();
+  ensureWorkspace();
   const script = path.join(env.scriptDir, 'pdf_to_docx.py');
   const outputFileName = `${randomUUID()}.docx`;
   const outputPath = path.join(env.outputDir, outputFileName);

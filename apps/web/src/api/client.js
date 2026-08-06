@@ -165,13 +165,15 @@ export function apiPostForm(path, formData, { onProgress, timeoutMs = 180000 } =
     });
 
     xhr.addEventListener('error', () => {
-      // status 0 on a cross-origin request is almost always a CORS rejection,
-      // which the browser deliberately hides from JavaScript.
+      // The browser hides the reason behind a bare status 0, so don't guess at
+      // one. Blaming CORS here was actively misleading: the app health-checks
+      // the same origin on load, so a CORS problem would have shown up in the
+      // banner long before any upload. In practice this is a dropped
+      // connection — the free instance restarting, or a file heavy enough to
+      // exhaust it — and both are worth retrying.
       reject(
         new ApiError(
-          IS_CROSS_ORIGIN
-            ? 'Could not reach the API. If this keeps happening, the server may not allow requests from this site (CORS).'
-            : 'Could not reach the API.',
+          'Lost connection to the server while uploading. This is usually temporary — please try again. If it keeps happening with the same file, try a smaller one.',
           { code: 'network_error' }
         )
       );

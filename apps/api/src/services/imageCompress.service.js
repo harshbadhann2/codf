@@ -8,6 +8,7 @@ const { env } = require('../config/env');
 const { AppError } = require('../utils/AppError');
 const { sanitizeBaseName } = require('../utils/sanitizeFilename');
 const { safeUnlink } = require('../utils/fileCleanup');
+const { ensureWorkspace } = require('../utils/workspace');
 const { padToMinimum } = require('../utils/imagePadding');
 const { logger } = require('../utils/logger');
 
@@ -102,14 +103,6 @@ function buildResize(maxWidth, maxHeight, fit) {
 }
 
 /**
- * Compresses an image to land at or under a target file size.
- *
- * Exists because form portals (exam boards, university admissions) reject
- * uploads over a fixed KB limit, often with fixed pixel dimensions too.
- * Quality is traded first; the image is only downscaled when quality alone
- * cannot get there, and the response says so.
- */
-/**
  * Climbs toward `minBytes` without losing quality.
  *
  * Tries full-chroma encoding at increasing quality, keeping the largest result
@@ -132,6 +125,14 @@ async function searchUpward(makePipeline, ext, minBytes, maxBytes, currentBytes)
   return bestBuffer;
 }
 
+/**
+ * Compresses an image to land inside a target file size.
+ *
+ * Exists because form portals (exam boards, university admissions) reject
+ * uploads outside a fixed KB range, often at fixed pixel dimensions too.
+ * Quality is traded first; the image is only downscaled when quality alone
+ * cannot get there, and the response says so.
+ */
 async function compressToTarget({
   inputPath,
   targetBytes,
@@ -240,6 +241,7 @@ async function compressToTarget({
     }
   }
 
+  ensureWorkspace();
   const outputFileName = `${randomUUID()}.${spec.ext}`;
   const outputPath = path.join(env.outputDir, outputFileName);
 

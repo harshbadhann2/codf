@@ -40,8 +40,9 @@ function scheduleFileCleanup(filePath, ttlMs) {
  * Sweeps a directory for entries older than `maxAgeMs`. The scheduled per-file
  * timers above are lost on restart, so this is what actually bounds disk use.
  */
-async function cleanupOldFiles(directoryPath, maxAgeMs) {
+async function cleanupOldFiles(directoryPath, maxAgeMs, { protect = [] } = {}) {
   const now = Date.now();
+  const protected_ = new Set(protect);
   let entries;
 
   try {
@@ -55,6 +56,11 @@ async function cleanupOldFiles(directoryPath, maxAgeMs) {
 
   await Promise.all(
     entries.map(async (entry) => {
+      // Never remove a directory the app itself depends on. Their mtime only
+      // changes when something is written, so a quiet hour is enough to make
+      // them look stale — and deleting them breaks every upload that follows.
+      if (protected_.has(entry.name)) return;
+
       const entryPath = path.join(directoryPath, entry.name);
 
       try {

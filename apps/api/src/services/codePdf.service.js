@@ -10,6 +10,7 @@ const { env } = require('../config/env');
 const { AppError } = require('../utils/AppError');
 const { sanitizeBaseName } = require('../utils/sanitizeFilename');
 const { safeUnlink } = require('../utils/fileCleanup');
+const { ensureWorkspace } = require('../utils/workspace');
 const { parseHighlightedTokens, tokenColor, isCommentToken, isBoldToken } = require('../utils/codeTokens');
 
 const PAGE_SIZE = 'LETTER';
@@ -403,6 +404,7 @@ async function generateCodePdf({ code, filename, language, title, section }) {
   const highlighted = highlight(normalized, detectedLanguage);
   const lines = tokensToLines(parseHighlightedTokens(highlighted.html));
 
+  ensureWorkspace();
   const outputFileName = `${randomUUID()}.pdf`;
   const outputPath = path.join(env.outputDir, outputFileName);
 

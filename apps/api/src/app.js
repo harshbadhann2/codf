@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -12,11 +12,10 @@ const { globalLimiter } = require('./middleware/rateLimit.middleware');
 const { requestContext } = require('./middleware/requestContext.middleware');
 const { errorHandler, notFound } = require('./middleware/error.middleware');
 const { cleanupOldFiles } = require('./utils/fileCleanup');
+const { ensureWorkspace } = require('./utils/workspace');
 const { logger } = require('./utils/logger');
 
-[env.workDir, env.uploadDir, env.outputDir].forEach((directory) => {
-  fs.mkdirSync(directory, { recursive: true });
-});
+ensureWorkspace();
 
 // Sharp's default cache and thread pool are tuned for beefy servers. On a
 // 512 MB instance they are pure overhead.
@@ -61,10 +60,18 @@ app.use(errorHandler);
  */
 function startCleanupLoop() {
   const sweep = () => {
+    // The work-dir pass exists to collect abandoned per-conversion temp dirs
+    // (LibreOffice profiles). uploads/ and outputs/ are protected: their mtime
+    // goes stale during any quiet spell, and removing them breaks every
+    // subsequent upload until the process restarts.
+    ensureWorkspace();
+
     Promise.all([
       cleanupOldFiles(env.uploadDir, env.fileTtlMs),
       cleanupOldFiles(env.outputDir, env.fileTtlMs),
-      cleanupOldFiles(env.workDir, env.fileTtlMs * 2)
+      cleanupOldFiles(env.workDir, env.fileTtlMs * 2, {
+        protect: [path.basename(env.uploadDir), path.basename(env.outputDir)]
+      })
     ])
       .then(([uploads, outputs, scratch]) => {
         const total = uploads + outputs + scratch;

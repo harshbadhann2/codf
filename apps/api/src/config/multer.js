@@ -4,6 +4,7 @@ const path = require('path');
 const multer = require('multer');
 const { randomUUID } = require('crypto');
 const { env } = require('./env');
+const { ensureWorkspace } = require('../utils/workspace');
 const { SUPPORTED_CODE_EXTENSIONS } = require('../services/codeFile.service');
 
 const ALLOWED_EXTENSIONS = new Set([
@@ -20,7 +21,16 @@ const ALLOWED_EXTENSIONS = new Set([
 // a real cost on a 512 MB instance, and streaming to disk costs nothing.
 const storage = multer.diskStorage({
   destination(_req, _file, cb) {
-    cb(null, env.uploadDir);
+    // Re-assert the directory rather than trusting boot-time creation: the
+    // work dir lives under the OS temp dir and can vanish under a long-running
+    // process, and Multer's failure mode there is an opaque 500 on every
+    // upload.
+    try {
+      ensureWorkspace();
+      cb(null, env.uploadDir);
+    } catch (error) {
+      cb(error);
+    }
   },
   filename(_req, file, cb) {
     const extension = path.extname(file.originalname || '').toLowerCase();

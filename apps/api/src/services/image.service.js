@@ -7,6 +7,7 @@ const { env } = require('../config/env');
 const { AppError } = require('../utils/AppError');
 const { sanitizeBaseName } = require('../utils/sanitizeFilename');
 const { safeUnlink } = require('../utils/fileCleanup');
+const { ensureWorkspace } = require('../utils/workspace');
 
 // A decompression bomb is small on disk and enormous in memory. 50 MP is a
 // generous ceiling for real photos and well inside the instance's budget.
@@ -26,6 +27,7 @@ async function convertImage({ inputPath, targetFormat, originalBaseName, quality
     throw AppError.badRequest('targetFormat must be one of: png, jpg, webp.');
   }
 
+  ensureWorkspace();
   const outputFileName = `${randomUUID()}.${target.ext}`;
   const outputPath = path.join(env.outputDir, outputFileName);
 
