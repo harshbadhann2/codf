@@ -170,6 +170,23 @@ A 512 MB instance ran out mid-conversion, most often on a large or image-heavy P
 - Keep `MAX_CONCURRENT_JOBS=1` — raising it is the fastest way to make this worse.
 - Upgrade to Render's Starter plan for more RAM.
 
+### Deep links 404 on Vercel
+
+`apps/web/vercel.json` rewrites everything to `/index.html` so the SPA handles
+its own paths. Two things break that rewrite:
+
+- **`cleanUrls: true`** redirects `/index.html` to `/`, leaving the rewrite
+  pointing at a destination that no longer resolves. Do not set it — there is
+  only one HTML file, so it buys nothing.
+- **Any unknown top-level key**, including a `"//"` comment. Vercel validates
+  `vercel.json` against a strict schema and fails the build on extra
+  properties, which leaves the *previous* deployment serving. `package.json`
+  tolerates comment keys; `vercel.json` does not.
+
+The second failure is quiet from the outside: the site keeps working on old
+code, so it looks like the deploy simply had no effect. Check the Deployments
+tab for a failed build before assuming the config is wrong.
+
 ### Downloads 404
 
 Converted files are deleted after `FILE_TTL_MS` (15 minutes). A link from an old tab will have expired — convert again. If a *fresh* download 404s, the API was redeployed between converting and downloading; the filesystem is ephemeral and does not survive a restart.
