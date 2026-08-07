@@ -147,23 +147,27 @@ export default function App() {
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+        {/* ── Top bar ───────────────────────────────────────────
+            The eyebrow and the theme toggle share one full-width row of
+            their own. Sitting the toggle inside the preview column had it
+            overlapping the card's corner at every breakpoint. */}
+        <div className="mb-7 flex items-center justify-between gap-4 sm:mb-9">
+          <p className="eyebrow">Student utility platform</p>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            className="focus-ring grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--line)] bg-[rgb(var(--surface)/0.6)] text-[var(--ink-muted)] backdrop-blur transition hover:scale-105 hover:text-[var(--ink)] active:scale-95"
+          >
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
+        </div>
+
         {/* ── Masthead + product preview, side by side on desktop ── */}
-        <header className="grid items-center gap-6 sm:gap-8 lg:grid-cols-[1fr_minmax(0,0.95fr)] lg:gap-10">
+        <header className="grid items-center gap-7 sm:gap-8 lg:grid-cols-[1fr_minmax(0,0.95fr)] lg:gap-10">
           <div className="stagger">
-            <div className="flex items-start justify-between gap-4">
-              <p className="eyebrow">Student utility platform</p>
-
-              <button
-                type="button"
-                onClick={toggleTheme}
-                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                className="focus-ring grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--line)] bg-[rgb(var(--surface)/0.6)] text-[var(--ink-muted)] backdrop-blur transition hover:scale-105 hover:text-[var(--ink)] active:scale-95 lg:hidden"
-              >
-                {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-              </button>
-            </div>
-
-            <h1 className="display mt-3 text-[clamp(2.75rem,8vw,4.25rem)]">
+            <h1 className="display text-[clamp(2.75rem,8vw,4.25rem)]">
               <span className="gradient-text">coDF</span>
               <span className="ml-3 align-middle text-[0.3em] font-semibold tracking-[0.18em] text-[var(--ink-faint)]">
                 BY BADHAN
@@ -180,22 +184,11 @@ export default function App() {
             </div>
           </div>
 
-          {/* On desktop the toggle lives up here so the preview column has an
-              anchor and the headline column isn't split by a stray control. */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              className="focus-ring absolute -top-2 right-0 z-10 hidden h-10 w-10 place-items-center rounded-full border border-[var(--line)] bg-[rgb(var(--surface)/0.6)] text-[var(--ink-muted)] backdrop-blur transition hover:scale-105 hover:text-[var(--ink)] active:scale-95 lg:grid"
-            >
-              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-            </button>
-
-            <section className="reveal glass panel-lit rounded-[var(--radius-lg)] p-3 sm:p-4 lg:mt-8">
-              <Hero />
-            </section>
-          </div>
+          {/* The preview follows the active tab, so it always illustrates the
+              conversion in front of you rather than a fixed example. */}
+          <section className="reveal glass panel-lit rounded-[var(--radius-lg)] p-3 sm:p-4">
+            <Hero variant={activeTab} />
+          </section>
         </header>
 
         <div className="mt-6">

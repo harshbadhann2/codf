@@ -106,6 +106,15 @@ export function MoonIcon(props) {
   );
 }
 
+/** Two-way arrow, for conversions that run in both directions. */
+export function SwapIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 9h16m0 0-4-4m4 4-4 4M20 15H4m0 0 4-4m-4 4 4 4" />
+    </svg>
+  );
+}
+
 export function ArrowIcon(props) {
   return (
     <svg {...base} {...props}>
