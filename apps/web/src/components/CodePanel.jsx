@@ -64,11 +64,11 @@ export default function CodePanel({ onSubmit, isBusy, maxFileSizeMb }) {
 
       <div>
         <div className="mb-1 flex items-baseline justify-between">
-          <label htmlFor="code-input" className="text-sm font-semibold">
+          <label htmlFor="code-input" className="text-xs font-semibold uppercase tracking-wider text-[var(--ink-muted)]">
             Paste your code
           </label>
           {form.code.length > 0 && (
-            <span className="text-xs text-[var(--text-muted)]">{form.code.length.toLocaleString()} characters</span>
+            <span className="text-xs text-[var(--ink-faint)]">{form.code.length.toLocaleString()} characters</span>
           )}
         </div>
         <textarea
@@ -77,7 +77,7 @@ export default function CodePanel({ onSubmit, isBusy, maxFileSizeMb }) {
           onChange={(event) => update({ code: event.target.value })}
           disabled={usingFile}
           spellCheck={false}
-          className="focus-ring h-64 w-full resize-y rounded-xl border border-[var(--line)] bg-slate-950 p-4 font-mono text-xs leading-relaxed text-teal-100 placeholder:text-slate-500 disabled:opacity-40"
+          className="focus-ring h-56 w-full resize-y rounded-[var(--radius-md)] border border-[var(--line)] bg-slate-950 p-4 font-mono text-xs leading-relaxed text-teal-100 shadow-inner transition placeholder:text-slate-600 focus:border-[var(--accent)] disabled:opacity-40 sm:h-64"
           placeholder={usingFile ? 'Using the uploaded file instead…' : '# paste your code here'}
         />
       </div>
@@ -85,7 +85,7 @@ export default function CodePanel({ onSubmit, isBusy, maxFileSizeMb }) {
       <div className="relative">
         <div className="mb-2 flex items-center gap-3">
           <span className="h-px flex-1 bg-[var(--line)]" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">or upload</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--ink-faint)]">or upload</span>
           <span className="h-px flex-1 bg-[var(--line)]" />
         </div>
 

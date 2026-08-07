@@ -5,7 +5,7 @@ export default function ProgressBar({ value = 0, label = 'Uploading' }) {
   return (
     <div>
       <div
-        className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
+        className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--line-strong)]"
         role="progressbar"
         aria-valuenow={clamped}
         aria-valuemin={0}
@@ -13,14 +13,14 @@ export default function ProgressBar({ value = 0, label = 'Uploading' }) {
         aria-label={label}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r from-orange-500 to-teal-600 transition-[width] duration-200"
+          className="h-full rounded-full bg-gradient-to-r from-[var(--accent-2)] to-[var(--accent)] transition-[width] duration-300 ease-out"
           style={{ width: `${clamped}%` }}
         />
       </div>
 
-      <p className="mt-1.5 text-xs text-[var(--text-muted)]">
+      <p className="mt-2 text-xs text-[var(--ink-faint)]">
         {/* Once the bytes are up, the wait is server-side work, not upload. */}
-        {isComplete ? 'Uploaded — converting on the server…' : `${label}: ${clamped}%`}
+        {isComplete ? 'Uploaded — converting on the server…' : `${label} · ${clamped}%`}
       </p>
     </div>
   );

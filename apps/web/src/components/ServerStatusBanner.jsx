@@ -11,50 +11,47 @@ export default function ServerStatusBanner({ status, attempt, error, onRetry }) 
 
   if (status === 'checking') {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-white/70 px-4 py-3 text-sm dark:bg-slate-900/50">
-        <span
-          className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-teal-600 border-t-transparent dark:border-teal-300 dark:border-t-transparent"
-          aria-hidden="true"
-        />
-        <span className="text-[var(--text-muted)]">Connecting to the conversion server…</span>
+      <div className="animate-fade flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--line)] bg-[rgb(var(--surface)/0.6)] px-4 py-2.5 text-sm backdrop-blur">
+        <span className="spinner h-3.5 w-3.5" aria-hidden="true" />
+        <span className="text-[var(--ink-muted)]">Connecting to the conversion server…</span>
       </div>
     );
   }
 
   if (status === 'waking') {
     return (
-      <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-500/40 dark:bg-amber-950/30">
+      <div className="animate-pop rounded-[var(--radius-md)] border border-amber-500/35 bg-amber-500/10 px-4 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
           <span
-            className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-amber-600 border-t-transparent dark:border-amber-300 dark:border-t-transparent"
+            className="spinner h-3.5 w-3.5 border-amber-500"
             aria-hidden="true"
           />
-          <p className="font-semibold text-amber-900 dark:text-amber-100">
+          <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
             Waking the server up… (attempt {attempt})
           </p>
         </div>
-        <p className="mt-1.5 pl-6 text-xs text-amber-800 dark:text-amber-200/80">
-          The free server sleeps when it is not in use. First load can take up to a minute — you can start filling in
-          the form while you wait.
+        <p className="mt-1.5 pl-6 text-xs leading-relaxed text-amber-800/80 dark:text-amber-200/70">
+          The free server sleeps when idle. First load can take up to a minute — you can start filling in the form
+          while you wait.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm dark:border-red-500/40 dark:bg-red-950/30">
-      <p className="font-semibold text-red-900 dark:text-red-100">Cannot reach the conversion server</p>
-      <p className="mt-1 text-xs text-red-800 dark:text-red-200/80">{error || 'The server did not respond.'}</p>
+    <div className="animate-pop rounded-[var(--radius-md)] border border-red-500/35 bg-red-500/10 px-4 py-3 backdrop-blur">
+      <p className="text-sm font-semibold text-red-700 dark:text-red-200">Cannot reach the conversion server</p>
+      <p className="mt-1 text-xs text-red-700/80 dark:text-red-200/70">{error || 'The server did not respond.'}</p>
 
-      <p className="mt-2 break-all text-xs text-red-700/80 dark:text-red-200/60">
-        API: <code className="font-mono">{API_BASE_URL}</code>
+      <p className="mt-2 break-all font-mono text-[11px] text-red-700/60 dark:text-red-200/50">
+        {API_BASE_URL}
         {!IS_CROSS_ORIGIN && ' (same origin — is the local API running?)'}
       </p>
 
       <button
         type="button"
         onClick={onRetry}
-        className="focus-ring mt-3 rounded-lg bg-red-700 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-red-800"
+        className="focus-ring mt-3 rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-red-700 active:scale-95"
       >
         Try again
       </button>

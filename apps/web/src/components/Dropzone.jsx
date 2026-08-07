@@ -1,10 +1,11 @@
 import { useId, useRef, useState } from 'react';
 import { formatBytes } from '../lib/files';
+import { UploadIcon } from './Icons';
 
 export default function Dropzone({ accept, file, onFileSelect, onClear, helpText, disabled = false }) {
   const inputRef = useRef(null);
   const inputId = useId();
-  const [isDragOver, setIsDragOver] = useState(false);
+  const [isOver, setIsOver] = useState(false);
 
   function handleSelect(event) {
     const selected = event.target.files?.[0];
@@ -15,7 +16,7 @@ export default function Dropzone({ accept, file, onFileSelect, onClear, helpText
 
   function handleDrop(event) {
     event.preventDefault();
-    setIsDragOver(false);
+    setIsOver(false);
     if (disabled) return;
 
     const dropped = event.dataTransfer.files?.[0];
@@ -26,18 +27,14 @@ export default function Dropzone({ accept, file, onFileSelect, onClear, helpText
     if (!disabled) inputRef.current?.click();
   }
 
-  const borderStyle = isDragOver
-    ? 'border-teal-500 bg-teal-50/70 dark:border-teal-400 dark:bg-teal-950/30'
-    : 'border-[var(--line)] bg-white/60 hover:border-teal-400 dark:bg-slate-900/40';
-
   return (
     <div>
       <div
         onDragOver={(event) => {
           event.preventDefault();
-          if (!disabled) setIsDragOver(true);
+          if (!disabled) setIsOver(true);
         }}
-        onDragLeave={() => setIsDragOver(false)}
+        onDragLeave={() => setIsOver(false)}
         onDrop={handleDrop}
         onClick={openPicker}
         onKeyDown={(event) => {
@@ -50,8 +47,8 @@ export default function Dropzone({ accept, file, onFileSelect, onClear, helpText
         tabIndex={disabled ? -1 : 0}
         aria-disabled={disabled}
         aria-describedby={`${inputId}-help`}
-        className={`focus-ring rounded-2xl border-2 border-dashed p-6 text-center transition ${borderStyle} ${
-          disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+        className={`dropzone focus-ring group px-5 py-7 text-center ${isOver ? 'is-over' : ''} ${
+          disabled ? 'is-disabled' : 'cursor-pointer'
         }`}
       >
         <input
@@ -64,40 +61,47 @@ export default function Dropzone({ accept, file, onFileSelect, onClear, helpText
           disabled={disabled}
         />
 
-        <svg
-          className="mx-auto h-8 w-8 text-teal-600 dark:text-teal-400"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          aria-hidden="true"
+        <span
+          className={`mx-auto grid h-11 w-11 place-items-center rounded-full border border-[var(--line)] bg-[rgb(var(--surface)/0.7)] text-[var(--accent)] transition-transform duration-300 ${
+            isOver ? 'scale-110' : 'group-hover:scale-105'
+          }`}
         >
-          <path d="M12 16V4m0 0L8 8m4-4 4 4" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" />
-        </svg>
+          <UploadIcon width={19} height={19} />
+        </span>
 
-        <p className="mt-2 text-sm font-semibold text-[var(--text-main)]">
-          Drop a file here, or <span className="text-teal-700 underline dark:text-teal-300">browse</span>
+        <p className="mt-3 text-sm font-semibold">
+          {isOver ? (
+            'Drop it here'
+          ) : (
+            <>
+              Drop a file, or <span className="text-[var(--accent)] underline underline-offset-2">browse</span>
+            </>
+          )}
         </p>
-        <p id={`${inputId}-help`} className="mt-1 text-xs text-[var(--text-muted)]">
+        <p id={`${inputId}-help`} className="mt-1 text-xs leading-relaxed text-[var(--ink-faint)]">
           {helpText}
         </p>
       </div>
 
       {file && (
-        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] bg-white/70 px-3 py-2 dark:bg-slate-900/50">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-teal-800 dark:text-teal-300" title={file.name}>
-              {file.name}
-            </p>
-            <p className="text-xs text-[var(--text-muted)]">{formatBytes(file.size)}</p>
+        <div className="animate-pop mt-3 flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--line)] bg-[rgb(var(--surface)/0.7)] px-3.5 py-2.5">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
+              <UploadIcon width={15} height={15} />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold" title={file.name}>
+                {file.name}
+              </p>
+              <p className="text-xs text-[var(--ink-faint)]">{formatBytes(file.size)}</p>
+            </div>
           </div>
 
           {onClear && (
             <button
               type="button"
               onClick={onClear}
-              className="focus-ring shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-orange-700 transition hover:bg-orange-50 dark:text-orange-300 dark:hover:bg-orange-950/40"
+              className="focus-ring shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold text-[var(--ink-muted)] transition hover:bg-red-500/10 hover:text-red-500"
             >
               Remove
             </button>

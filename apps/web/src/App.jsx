@@ -7,25 +7,36 @@ import ResultCard from './components/ResultCard';
 import ServerStatusBanner from './components/ServerStatusBanner';
 import Spinner from './components/Spinner';
 import ProgressBar from './components/ProgressBar';
+import TabBar from './components/TabBar';
+import Hero, { TrustChips } from './components/Hero';
+import { CodeIcon, DocIcon, ImageIcon, MoonIcon, ResizeIcon, ShieldIcon, SunIcon } from './components/Icons';
 import { useServerStatus } from './hooks/useServerStatus';
 import { useTheme } from './hooks/useTheme';
+import { useReveal } from './hooks/useReveal';
 import { validateFile } from './lib/files';
 import { CODE_EXTENSIONS } from './lib/constants';
 import {
+  compressImage,
   convertCodeFileToPdf,
   convertCodeToPdf,
   convertDocxToPdf,
   convertImage,
-  convertPdfToDocx,
-  compressImage
+  convertPdfToDocx
 } from './api/conversions';
 
 const TABS = [
-  { id: 'code', label: 'Code → PDF' },
-  { id: 'document', label: 'Word ↔ PDF' },
-  { id: 'image', label: 'Image formats' },
-  { id: 'compress', label: 'Resize for forms' }
+  { id: 'code', label: 'Code → PDF', icon: CodeIcon },
+  { id: 'document', label: 'Word ↔ PDF', icon: DocIcon },
+  { id: 'image', label: 'Image formats', icon: ImageIcon },
+  { id: 'compress', label: 'Resize for forms', icon: ResizeIcon }
 ];
+
+const TAB_BLURB = {
+  code: 'Paste or upload source code and get a syntax-highlighted PDF, ready to submit.',
+  document: 'Convert Word to PDF, or turn a PDF back into an editable Word document.',
+  image: 'Switch between JPG, PNG and WebP without losing quality.',
+  compress: 'Hit the exact size an exam or admission form demands.'
+};
 
 const FALLBACK_MAX_FILE_SIZE_MB = Number(import.meta.env.VITE_MAX_FILE_SIZE_MB || 10);
 
@@ -39,8 +50,8 @@ export default function App() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const pendingRef = useRef(null);
+  const revealRef = useReveal([activeTab]);
 
-  // Limits come from the server so the UI can never disagree with it.
   const maxFileSizeMb = health?.limits?.maxFileSizeMb ?? FALLBACK_MAX_FILE_SIZE_MB;
   const maxPdfPages = health?.limits?.pdfToDocxMaxPages ?? 60;
 
@@ -50,7 +61,6 @@ export default function App() {
     setProgress(0);
   }, []);
 
-  /** Single funnel for every conversion: consistent errors, progress and cleanup. */
   const run = useCallback(
     async (kind, task) => {
       resetFeedback();
@@ -62,7 +72,6 @@ export default function App() {
         const data = await request;
         setResult({ ...data, kind });
       } catch (caught) {
-        // A cancel is a user action, not something to report as a failure.
         if (caught.code !== 'aborted') setError(caught.message || 'The conversion failed.');
       } finally {
         pendingRef.current = null;
@@ -90,12 +99,7 @@ export default function App() {
       run('document', () =>
         convertCodeFileToPdf(
           form.file,
-          {
-            filename: form.filename,
-            title: form.title,
-            section: form.section,
-            language: form.language
-          },
+          { filename: form.filename, title: form.title, section: form.section, language: form.language },
           { onProgress: setProgress }
         )
       );
@@ -135,62 +139,94 @@ export default function App() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="codf-shell animate-rise rounded-3xl border border-[var(--line)] p-5 shadow-panel backdrop-blur md:p-8">
-        <header className="flex flex-col gap-4 border-b border-[var(--line)] pb-6 md:flex-row md:items-start md:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 dark:text-orange-300">
-              Student utility platform
-            </p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight md:text-4xl">
-              coDF <span className="ml-1 text-lg font-normal opacity-50 md:text-xl">by BADHAN</span>
+    <div ref={revealRef} className="relative min-h-full">
+      <div className="ambient" aria-hidden="true">
+        <span className="orb orb-1" />
+        <span className="orb orb-2" />
+        <span className="orb orb-3" />
+      </div>
+
+      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+        {/* ── Masthead + product preview, side by side on desktop ── */}
+        <header className="grid items-center gap-6 sm:gap-8 lg:grid-cols-[1fr_minmax(0,0.95fr)] lg:gap-10">
+          <div className="stagger">
+            <div className="flex items-start justify-between gap-4">
+              <p className="eyebrow">Student utility platform</p>
+
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                className="focus-ring grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--line)] bg-[rgb(var(--surface)/0.6)] text-[var(--ink-muted)] backdrop-blur transition hover:scale-105 hover:text-[var(--ink)] active:scale-95 lg:hidden"
+              >
+                {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+              </button>
+            </div>
+
+            <h1 className="display mt-3 text-[clamp(2.75rem,8vw,4.25rem)]">
+              <span className="gradient-text">coDF</span>
+              <span className="ml-3 align-middle text-[0.3em] font-semibold tracking-[0.18em] text-[var(--ink-faint)]">
+                BY BADHAN
+              </span>
             </h1>
-            <p className="mt-2 max-w-xl text-sm text-[var(--text-muted)]">
-              Turn source code into a clean, syntax-highlighted PDF — plus Word ↔ PDF and image format conversion.
-              Files are processed on the fly and deleted automatically.
+
+            <p className="mt-4 max-w-lg text-[0.95rem] leading-relaxed text-[var(--ink-muted)] sm:text-base">
+              Turn your code into a clean, submission-ready PDF — plus Word ↔ PDF and the image resizing every
+              application form insists on. No account, nothing kept.
             </p>
+
+            <div className="mt-5">
+              <TrustChips />
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            className="focus-ring inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-[var(--line)] px-4 py-2 text-sm font-semibold transition hover:bg-white dark:hover:bg-slate-800"
-          >
-            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
-          </button>
+          {/* On desktop the toggle lives up here so the preview column has an
+              anchor and the headline column isn't split by a stray control. */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              className="focus-ring absolute -top-2 right-0 z-10 hidden h-10 w-10 place-items-center rounded-full border border-[var(--line)] bg-[rgb(var(--surface)/0.6)] text-[var(--ink-muted)] backdrop-blur transition hover:scale-105 hover:text-[var(--ink)] active:scale-95 lg:grid"
+            >
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+            </button>
+
+            <section className="reveal glass panel-lit rounded-[var(--radius-lg)] p-3 sm:p-4 lg:mt-8">
+              <Hero />
+            </section>
+          </div>
         </header>
 
-        <div className="mt-5">
+        <div className="mt-6">
           <ServerStatusBanner status={status} attempt={attempt} error={serverError} onRetry={retry} />
         </div>
 
-        <div role="tablist" aria-label="Conversion type" className="mt-5 flex flex-wrap gap-2">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                resetFeedback();
-              }}
-              className={`focus-ring rounded-full px-4 py-2 text-sm font-semibold transition ${
-                activeTab === tab.id
-                  ? 'bg-teal-700 text-white shadow-lift dark:bg-teal-500 dark:text-slate-900'
-                  : 'border border-[var(--line)] bg-white/70 hover:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-800'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* ── Tabs ─────────────────────────────────────────────── */}
+        <div className="reveal mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
+          <TabBar
+            tabs={TABS}
+            active={activeTab}
+            onChange={(id) => {
+              setActiveTab(id);
+              resetFeedback();
+            }}
+          />
+          <p className="hidden max-w-xs text-right text-xs leading-relaxed text-[var(--ink-faint)] lg:block">
+            {TAB_BLURB[activeTab]}
+          </p>
         </div>
 
-        <main className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+        <p className="mt-3 text-sm text-[var(--ink-muted)] lg:hidden">{TAB_BLURB[activeTab]}</p>
+
+        {/* ── Work area ────────────────────────────────────────── */}
+        <main className="mt-5 grid items-start gap-5 lg:grid-cols-[1.55fr_1fr]">
           <section
+            key={activeTab}
+            id={`panel-${activeTab}`}
             role="tabpanel"
-            className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 md:p-6"
+            aria-labelledby={`tab-${activeTab}`}
+            className="panel panel-lit animate-fade p-4 shadow-[var(--shadow-md)] sm:p-6"
           >
             {activeTab === 'code' && (
               <CodePanel onSubmit={handleCodeSubmit} isBusy={isBusy} maxFileSizeMb={maxFileSizeMb} />
@@ -216,64 +252,90 @@ export default function App() {
             )}
           </section>
 
-          <aside className="space-y-4">
-            <div className="space-y-3 rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 md:p-6">
-              <h2 className="text-lg font-bold">Status</h2>
+          <aside className="space-y-4 lg:sticky lg:top-6">
+            <div className="panel panel-lit p-4 shadow-[var(--shadow-md)] sm:p-5">
+              <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--ink-muted)]">
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    isBusy ? 'animate-pulse bg-[var(--accent-2)]' : 'bg-[var(--accent)]'
+                  }`}
+                />
+                Status
+              </h2>
 
-              {isBusy && (
-                <div className="space-y-3">
-                  <Spinner label="Converting your file…" />
-                  {progress > 0 && <ProgressBar value={progress} />}
-                  <button
-                    type="button"
-                    onClick={cancel}
-                    className="focus-ring text-xs font-semibold text-orange-700 underline dark:text-orange-300"
+              <div className="mt-3">
+                {isBusy && (
+                  <div className="animate-fade space-y-3">
+                    <Spinner label="Converting…" />
+                    {progress > 0 && <ProgressBar value={progress} />}
+                    <button
+                      type="button"
+                      onClick={cancel}
+                      className="focus-ring text-xs font-semibold text-[var(--accent-2)] underline underline-offset-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+
+                {error && !isBusy && (
+                  <div
+                    role="alert"
+                    className="animate-pop rounded-[var(--radius-md)] border border-red-400/40 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-200"
                   >
-                    Cancel
-                  </button>
-                </div>
-              )}
+                    {error}
+                  </div>
+                )}
 
-              {error && !isBusy && (
-                <div
-                  role="alert"
-                  className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/40 dark:bg-red-950/30 dark:text-red-100"
-                >
-                  {error}
-                </div>
-              )}
+                {result && !isBusy && <ResultCard result={result} onReset={resetFeedback} />}
 
-              {result && !isBusy && <ResultCard result={result} onReset={resetFeedback} />}
-
-              {!isBusy && !error && !result && (
-                <p className="text-sm text-[var(--text-muted)]">
-                  Run a conversion and the download will appear here.
-                </p>
-              )}
+                {!isBusy && !error && !result && (
+                  <div className="flex flex-col items-center gap-2 py-6 text-center">
+                    <span className="grid h-11 w-11 place-items-center rounded-full border border-dashed border-[var(--line-strong)] text-[var(--ink-faint)]">
+                      <ShieldIcon width={19} height={19} />
+                    </span>
+                    <p className="text-sm text-[var(--ink-muted)]">
+                      Your download will appear here.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 text-xs text-[var(--text-muted)] md:p-6">
-              <p className="text-sm font-bold text-[var(--text-main)]">How your files are handled</p>
-              <ul className="mt-2 space-y-1.5">
-                <li>· Uploads are checked by content, not just file extension.</li>
-                <li>· Nothing is stored permanently — converted files are deleted on a timer.</li>
-                <li>· No account, no tracking, no third-party upload.</li>
+            <div className="panel panel-lit p-4 sm:p-5">
+              <p className="text-sm font-bold">How your files are handled</p>
+              <ul className="mt-3 space-y-2.5 text-xs leading-relaxed text-[var(--ink-muted)]">
+                {[
+                  'Checked by content, not just the file extension.',
+                  'Deleted automatically — nothing is kept after you leave.',
+                  'No account, no tracking, no third-party upload.'
+                ].map((item) => (
+                  <li key={item} className="flex gap-2.5">
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--accent)]" />
+                    {item}
+                  </li>
+                ))}
               </ul>
-
-              {health?.version && (
-                <p className="mt-3 border-t border-[var(--line)] pt-2 font-mono text-[11px] opacity-70">
-                  API v{health.version}
-                  {health.commit ? ` · ${health.commit}` : ''}
-                </p>
-              )}
             </div>
           </aside>
         </main>
-      </div>
 
-      <footer className="mt-6 text-center text-xs text-[var(--text-muted)]">
-        Built by Harsh Badhan · Frontend on Vercel, API on Render
-      </footer>
+        <footer className="reveal mt-14 border-t border-[var(--line)] pt-6 text-center">
+          <p className="text-xs text-[var(--ink-faint)]">
+            Built by Harsh Badhan · Frontend on Vercel, API on Render
+          </p>
+          {health?.version && (
+            /* Version stays for support, but as a tooltip rather than a build
+               string sitting in the interface for every visitor to puzzle at. */
+            <p
+              className="mt-1 text-[10px] text-[var(--ink-faint)] opacity-50"
+              title={`API v${health.version}${health.commit ? ` · ${health.commit}` : ''}`}
+            >
+              v{health.version}
+            </p>
+          )}
+        </footer>
+      </div>
     </div>
   );
 }

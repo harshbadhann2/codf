@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { downloadFile, formatBytes, formatDuration } from '../lib/files';
+import { CheckIcon, DownloadIcon } from './Icons';
 
 export default function ResultCard({ result, onReset }) {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -13,95 +14,92 @@ export default function ResultCard({ result, onReset }) {
     }
   }
 
-  const isImage = result.kind === 'image' || result.kind === 'compress';
+  const showsPreview = result.kind === 'image' || result.kind === 'compress';
+  const saved =
+    result.originalBytes > result.bytes
+      ? Math.round((1 - result.bytes / result.originalBytes) * 100)
+      : 0;
 
   return (
-    <div className="animate-rise space-y-3 rounded-2xl border border-teal-300 bg-teal-50/60 p-4 dark:border-teal-500/40 dark:bg-teal-950/25">
-      <div className="flex items-start gap-2">
-        <svg
-          className="mt-0.5 h-5 w-5 shrink-0 text-teal-700 dark:text-teal-300"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-hidden="true"
-        >
-          <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-[var(--text-main)]">Ready to download</p>
-          <p className="truncate text-sm text-[var(--text-muted)]" title={result.originalName}>
+    <div className="animate-pop space-y-3.5">
+      <div className="flex items-start gap-2.5">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
+          <CheckIcon width={16} height={16} />
+        </span>
+        <div className="min-w-0 pt-0.5">
+          <p className="text-sm font-bold">Ready to download</p>
+          <p className="truncate text-sm text-[var(--ink-muted)]" title={result.originalName}>
             {result.originalName}
           </p>
         </div>
       </div>
 
-      {result.kind === 'compress' && (
-        <div className="rounded-xl border border-[var(--line)] bg-white/70 p-3 dark:bg-slate-900/50">
-          <p className="text-sm font-semibold">
-            {formatBytes(result.originalBytes)} → <span className="text-teal-700 dark:text-teal-300">{formatBytes(result.bytes)}</span>
-            {result.originalBytes > result.bytes && (
-              // The leading space is deliberate: without a text node here the
-              // margin separates it visually but screen readers run the two
-              // figures together as "22 KB99% smaller".
-              <span className="text-xs font-normal text-[var(--text-muted)]">
-                {' '}· {Math.round((1 - result.bytes / result.originalBytes) * 100)}% smaller
+      {/* Compression is the one result where the numbers are the point. */}
+      {result.kind === 'compress' && result.originalBytes > 0 && (
+        <div className="rounded-[var(--radius-md)] border border-[var(--line)] bg-[rgb(var(--surface)/0.6)] p-3">
+          <div className="flex items-baseline gap-2 text-sm font-bold">
+            <span className="text-[var(--ink-faint)] line-through decoration-1">
+              {formatBytes(result.originalBytes)}
+            </span>
+            <span className="text-[var(--ink-faint)]">→</span>
+            <span className="text-[var(--accent)]">{formatBytes(result.bytes)}</span>
+            {saved > 0 && (
+              <span className="ml-auto rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--accent)]">
+                {saved}% smaller
               </span>
             )}
-          </p>
-          <p className="mt-1 text-xs text-[var(--text-muted)]">
-            {result.originalWidth}×{result.originalHeight} → {result.width}×{result.height} px
-          </p>
+          </div>
+
+          {result.originalWidth > 0 && (
+            <p className="mt-1.5 font-mono text-[11px] text-[var(--ink-faint)]">
+              {result.originalWidth}×{result.originalHeight} → {result.width}×{result.height} px
+            </p>
+          )}
 
           {result.padded && (
-            // Never leave this implicit: the user should know why the file is
-            // bigger than the picture warrants before they upload it anywhere.
-            <p className="mt-2 text-xs text-[var(--text-muted)]">
-              At this size the photo encodes below your {Math.round(result.minBytes / 1024)} KB minimum, so blank
-              metadata was added to reach it. The picture itself is unchanged and the file is a normal{' '}
-              {result.originalName?.split('.').pop()?.toUpperCase()}.
+            <p className="mt-2 text-[11px] leading-relaxed text-[var(--ink-muted)]">
+              The picture encodes below your {Math.round(result.minBytes / 1024)} KB minimum at this size, so blank
+              metadata was added to reach it. The image itself is unchanged.
             </p>
           )}
 
           {result.downscaled && (
-            // Said plainly: a smaller photo than they uploaded is a surprise
-            // worth naming, not burying.
-            <p className="mt-2 text-xs text-amber-800 dark:text-amber-300">
-              The image had to be scaled down to reach {Math.round(result.targetBytes / 1024)} KB. If the form needs
-              exact dimensions, set them above and compress again.
+            <p className="mt-2 text-[11px] leading-relaxed text-[var(--ink-muted)]">
+              Quality alone could not reach the target, so the image was scaled down. Set exact dimensions above if
+              your form requires them.
             </p>
           )}
         </div>
       )}
 
-      <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-muted)]">
+      <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--ink-muted)]">
         {result.detectedLanguage && (
-          <div className="flex gap-1">
-            <dt className="font-semibold">Language:</dt>
-            <dd>{result.detectedLanguage}</dd>
+          <div className="flex gap-1.5">
+            <dt className="font-semibold">Language</dt>
+            <dd className="font-mono">{result.detectedLanguage}</dd>
           </div>
         )}
         {result.lineCount > 0 && (
-          <div className="flex gap-1">
-            <dt className="font-semibold">Lines:</dt>
-            <dd>{result.lineCount.toLocaleString()}</dd>
+          <div className="flex gap-1.5">
+            <dt className="font-semibold">Lines</dt>
+            <dd className="font-mono">{result.lineCount.toLocaleString()}</dd>
           </div>
         )}
-        {result.width > 0 && result.kind !== 'compress' && (
-          <div className="flex gap-1">
-            <dt className="font-semibold">Size:</dt>
-            <dd>
-              {result.width} × {result.height}
+        {result.kind === 'image' && result.width > 0 && (
+          <div className="flex gap-1.5">
+            <dt className="font-semibold">Size</dt>
+            <dd className="font-mono">
+              {result.width}×{result.height}
             </dd>
           </div>
         )}
       </dl>
 
-      {isImage && (
+      {showsPreview && (
         <img
           src={`${result.downloadUrl}&inline=1`}
           alt={`Converted result: ${result.originalName}`}
-          className="max-h-56 w-full rounded-xl border border-[var(--line)] bg-white object-contain dark:bg-slate-900"
+          className="max-h-48 w-full rounded-[var(--radius-md)] border border-[var(--line)] bg-white object-contain p-1 dark:bg-slate-900"
           loading="lazy"
         />
       )}
@@ -111,23 +109,24 @@ export default function ResultCard({ result, onReset }) {
           type="button"
           onClick={handleDownload}
           disabled={isDownloading}
-          className="focus-ring inline-flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-teal-800 disabled:opacity-60 dark:bg-teal-500 dark:text-slate-900 dark:hover:bg-teal-400"
+          className="btn-primary focus-ring flex-1"
         >
+          {isDownloading ? (
+            <span className="spinner h-3.5 w-3.5 border-white" />
+          ) : (
+            <DownloadIcon width={16} height={16} />
+          )}
           {isDownloading ? 'Downloading…' : 'Download'}
         </button>
 
-        <button
-          type="button"
-          onClick={onReset}
-          className="focus-ring rounded-xl border border-[var(--line)] px-4 py-2 text-sm font-semibold transition hover:bg-white dark:hover:bg-slate-800"
-        >
-          Convert another
+        <button type="button" onClick={onReset} className="btn-ghost focus-ring">
+          Again
         </button>
       </div>
 
-      <p className="text-xs text-[var(--text-muted)]">
+      <p className="text-[11px] text-[var(--ink-faint)]">
         {/* Files are deleted on a TTL, so a stale tab's link will stop working. */}
-        This link expires in about {formatDuration(result.expiresInMs)}.
+        Link expires in about {formatDuration(result.expiresInMs)}.
       </p>
     </div>
   );
