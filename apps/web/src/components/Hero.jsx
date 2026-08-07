@@ -1,4 +1,5 @@
 import { ArrowIcon, ShieldIcon, SwapIcon } from './Icons';
+import { usePointerTilt } from '../hooks/usePointerTilt';
 
 /**
  * The active conversion, drawn.
@@ -27,7 +28,7 @@ const TOKEN_COLOUR = {
   pl: 'bg-slate-400/60'
 };
 
-const CARD = 'panel panel-lit relative w-[46%] max-w-[230px] overflow-hidden shadow-[var(--shadow-md)]';
+const CARD = 'panel panel-lit relative z-10 w-[46%] max-w-[230px] overflow-hidden shadow-[var(--shadow-md)]';
 
 function FormatChip({ label, tone }) {
   return (
@@ -95,7 +96,7 @@ function PageCard({ format = 'PDF', delay = 0.7, gutter = true }) {
 
       {gutter ? (
         <div className="rounded-lg bg-slate-50 p-2 ring-1 ring-slate-900/10">
-          <div className="space-y-[6px]">
+          <div className="pulse-lit space-y-[6px]">
             {CODE_LINES.map((line, row) => (
               <div key={row} className="flex items-center gap-1.5">
                 <span className="w-2 shrink-0 text-right font-mono text-[7px] leading-none text-slate-400">
@@ -118,7 +119,7 @@ function PageCard({ format = 'PDF', delay = 0.7, gutter = true }) {
         </div>
       ) : (
         /* Prose rather than code: what a converted document actually is. */
-        <div className="space-y-[6px] py-0.5">
+        <div className="pulse-lit space-y-[6px] py-0.5">
           {[92, 86, 94, 62, 0, 90, 78].map((width, row) =>
             width === 0 ? (
               <div key={row} className="h-[3px]" />
@@ -217,18 +218,26 @@ const VARIANTS = {
 export default function Hero({ variant = 'code' }) {
   const spec = VARIANTS[variant] || VARIANTS.code;
 
+  const tiltRef = usePointerTilt({ max: 4 });
+
   return (
     // Keyed on the variant so switching tabs replays the entrance rather than
     // silently swapping the artwork.
     <div key={variant} className="animate-fade">
-      <div className="relative flex items-center justify-center gap-3 sm:gap-4">
+      <div ref={tiltRef} className="tilt relative flex items-center justify-center gap-3 sm:gap-4">
+        {/* The pulse crosses behind the cards, so it reads as one continuous
+            path from source to result rather than a dot in a gap. */}
+        <div className="pulse-track" aria-hidden="true">
+          <span className="pulse-dot" />
+        </div>
+
         {spec.left}
 
         <div
-          className="flex shrink-0 flex-col items-center"
+          className="relative z-10 flex shrink-0 flex-col items-center"
           style={{ animation: 'pop .5s var(--ease-spring) both', animationDelay: '0.5s' }}
         >
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[var(--accent-2)] to-[var(--accent)] text-white shadow-[var(--shadow-glow)]">
+          <span className="pulse-node grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[var(--accent-2)] to-[var(--accent)] text-white shadow-[var(--shadow-glow)]">
             {spec.twoWay ? <SwapIcon width={16} height={16} /> : <ArrowIcon width={16} height={16} />}
           </span>
         </div>

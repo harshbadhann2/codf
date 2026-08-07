@@ -333,6 +333,165 @@ body {
   transform: none;
 }
 
+
+/* ───────────────── Signature motion: the conversion pulse ─────────────────
+   The product's whole story is "this becomes that". A light leaves the source
+   card, crosses the gap, and the destination lights up behind it — on a slow
+   loop, so the hero is never quite static without ever demanding attention.
+   This is the one piece of motion that belongs to this product specifically.
+   Everything animates transform/opacity, so it stays off the main thread. */
+
+.pulse-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+.pulse-dot {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 34%;
+  height: 2px;
+  transform: translate(-100%, -50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--accent-2), var(--accent), transparent);
+  opacity: 0;
+  animation: pulse-travel 4.2s var(--ease-out) infinite;
+  animation-delay: 1s;
+}
+
+@keyframes pulse-travel {
+  0% {
+    transform: translate(-100%, -50%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    transform: translate(320%, -50%);
+    opacity: 0;
+  }
+}
+
+/* The arrow node breathes in time with the pulse arriving. */
+.pulse-node {
+  animation: node-beat 4.2s var(--ease-out) infinite;
+  animation-delay: 1s;
+}
+
+@keyframes node-beat {
+  0%,
+  22%,
+  100% {
+    transform: scale(1);
+    box-shadow: var(--shadow-glow);
+  }
+  32% {
+    transform: scale(1.14);
+    box-shadow: 0 0 0 8px rgb(var(--surface) / 0), var(--shadow-glow);
+  }
+  46% {
+    transform: scale(1);
+  }
+}
+
+/* Destination content brightens as the pulse lands. */
+.pulse-lit > * {
+  animation: line-lit 4.2s var(--ease-out) infinite;
+}
+
+.pulse-lit > *:nth-child(1) { animation-delay: 2.15s; }
+.pulse-lit > *:nth-child(2) { animation-delay: 2.23s; }
+.pulse-lit > *:nth-child(3) { animation-delay: 2.31s; }
+.pulse-lit > *:nth-child(4) { animation-delay: 2.39s; }
+.pulse-lit > *:nth-child(5) { animation-delay: 2.47s; }
+.pulse-lit > *:nth-child(6) { animation-delay: 2.55s; }
+.pulse-lit > *:nth-child(7) { animation-delay: 2.63s; }
+
+@keyframes line-lit {
+  0%,
+  0.1%,
+  22%,
+  100% {
+    filter: none;
+  }
+  6% {
+    filter: brightness(1.35) saturate(1.4);
+  }
+}
+
+/* ───────────────── Pointer-reactive hero ─────────────────
+   A few degrees of tilt and a highlight that tracks the cursor. Subtle enough
+   that it reads as depth rather than a gimmick, and inert on touch devices
+   where there is no pointer to follow. */
+
+.tilt {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --spot-x: 50%;
+  --spot-y: 0%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tilt {
+    transform: perspective(1100px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .tilt::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      42% 60% at var(--spot-x) var(--spot-y),
+      rgba(255, 255, 255, 0.16),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-out);
+    pointer-events: none;
+  }
+
+  .tilt:hover::after {
+    opacity: 1;
+  }
+}
+
+/* ───────────────── Theme wipe ─────────────────
+   The old and new frames must not cross-fade, or the circular clip is invisible
+   underneath a dissolve. The new frame sits on top and is revealed by the
+   clip-path animation set up in useTheme. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+}
+
 /* ───────────────────────── Controls ───────────────────────── */
 
 .focus-ring {
@@ -645,7 +804,19 @@ select.field {
     transform: none;
   }
 
-  .orb {
+  .orb,
+  .pulse-dot,
+  .pulse-node,
+  .pulse-lit > * {
     animation: none;
+  }
+
+  .tilt {
+    transform: none !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
   }
 }

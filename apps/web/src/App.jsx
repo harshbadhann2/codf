@@ -9,6 +9,7 @@ import Spinner from './components/Spinner';
 import ProgressBar from './components/ProgressBar';
 import TabBar from './components/TabBar';
 import Hero, { TrustChips } from './components/Hero';
+import Logo from './components/Logo';
 import { CodeIcon, DocIcon, ImageIcon, MoonIcon, ResizeIcon, ShieldIcon, SunIcon } from './components/Icons';
 import { useServerStatus } from './hooks/useServerStatus';
 import { useTheme } from './hooks/useTheme';
@@ -156,7 +157,7 @@ export default function App() {
 
           <button
             type="button"
-            onClick={toggleTheme}
+            onClick={(event) => toggleTheme(event)}
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             className="focus-ring grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--line)] bg-[rgb(var(--surface)/0.6)] text-[var(--ink-muted)] backdrop-blur transition hover:scale-105 hover:text-[var(--ink)] active:scale-95"
           >
@@ -167,14 +168,9 @@ export default function App() {
         {/* ── Masthead + product preview, side by side on desktop ── */}
         <header className="grid items-center gap-7 sm:gap-8 lg:grid-cols-[1fr_minmax(0,0.95fr)] lg:gap-10">
           <div className="stagger">
-            <h1 className="display text-[clamp(2.75rem,8vw,4.25rem)]">
-              <span className="gradient-text">coDF</span>
-              <span className="ml-3 align-middle text-[0.3em] font-semibold tracking-[0.18em] text-[var(--ink-faint)]">
-                BY BADHAN
-              </span>
-            </h1>
+            <Logo />
 
-            <p className="mt-4 max-w-lg text-[0.95rem] leading-relaxed text-[var(--ink-muted)] sm:text-base">
+            <p className="mt-5 max-w-lg text-[0.95rem] leading-relaxed text-[var(--ink-muted)] sm:text-base">
               Turn your code into a clean, submission-ready PDF — plus Word ↔ PDF and the image resizing every
               application form insists on. No account, nothing kept.
             </p>
