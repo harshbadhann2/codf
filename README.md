@@ -65,6 +65,7 @@ The response reports which conversions this deployment can actually perform, and
 ## Features
 
 - **Code → PDF** — syntax highlighting for 190+ languages via highlight.js, rendered with JetBrains Mono, with line numbers, a title/subtitle block, and page footers. Accepts pasted code or an uploaded file, including Jupyter notebooks (`.ipynb`, flattened with markdown cells as comments).
+- **Markdown → PDF** — a real typesetter rather than a print stylesheet: headings, lists, tables, blockquotes, task lists and syntax-highlighted code, in a light or dark page theme. Every block is measured before anything is drawn, so a code listing is never sliced in half by a page break and a heading never ends up alone at the foot of a page.
 - **Word → PDF** — headless LibreOffice, with Liberation fonts so Microsoft-font documents keep their pagination.
 - **PDF → Word** — two engines. The default rebuilds the document as real Word content (headings, paragraphs, bullet lists, tab stops, section rules), which is both editable and the only option that survives LaTeX-produced PDFs. `mode=layout` switches to `pdf2docx`, which reproduces page positioning and is better for forms and dense tables.
 - **Images** — JPG / PNG / WebP in any direction via Sharp, with EXIF rotation applied and transparency flattened for JPG.
@@ -90,6 +91,8 @@ Base URL: `https://<your-api>/api`
 | `GET` | `/health/ping` | — | Cheap liveness probe (`pong`) |
 | `POST` | `/convert/code-to-pdf` | JSON: `code`, `filename?`, `language?`, `title?`, `section?` | |
 | `POST` | `/convert/code-file-to-pdf` | multipart: `file` + the same optional fields | |
+| `POST` | `/convert/markdown-to-pdf` | JSON: `markdown`, `filename?`, `title?`, `subtitle?`, `theme?` (`light`\|`dark`), `pageSize?` (`a4`\|`letter`) | |
+| `POST` | `/convert/markdown-file-to-pdf` | multipart: `file` + the same optional fields | |
 | `POST` | `/convert/docx-to-pdf` | multipart: `file` | Needs LibreOffice |
 | `POST` | `/convert/pdf-to-docx` | multipart: `file`, `mode?` (`text` default \| `layout`) | Needs Python |
 | `POST` | `/convert/image` | multipart: `file`, `targetFormat` (`png`\|`jpg`\|`webp`), `quality?` | |

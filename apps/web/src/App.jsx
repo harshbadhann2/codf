@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import CodePanel from './components/CodePanel';
+import MarkdownPanel from './components/MarkdownPanel';
 import DocumentPanel from './components/DocumentPanel';
 import ImagePanel from './components/ImagePanel';
 import CompressPanel from './components/CompressPanel';
@@ -10,7 +11,16 @@ import ProgressBar from './components/ProgressBar';
 import TabBar from './components/TabBar';
 import Hero, { TrustChips } from './components/Hero';
 import Logo from './components/Logo';
-import { CodeIcon, DocIcon, ImageIcon, MoonIcon, ResizeIcon, ShieldIcon, SunIcon } from './components/Icons';
+import {
+  CodeIcon,
+  DocIcon,
+  ImageIcon,
+  MarkdownIcon,
+  MoonIcon,
+  ResizeIcon,
+  ShieldIcon,
+  SunIcon
+} from './components/Icons';
 import { useServerStatus } from './hooks/useServerStatus';
 import { useTheme } from './hooks/useTheme';
 import { useReveal } from './hooks/useReveal';
@@ -20,6 +30,8 @@ import {
   compressImage,
   convertCodeFileToPdf,
   convertCodeToPdf,
+  convertMarkdownToPdf,
+  convertMarkdownFileToPdf,
   convertDocxToPdf,
   convertImage,
   convertPdfToDocx
@@ -27,6 +39,7 @@ import {
 
 const TABS = [
   { id: 'code', label: 'Code → PDF', icon: CodeIcon },
+  { id: 'markdown', label: 'Markdown → PDF', icon: MarkdownIcon },
   { id: 'document', label: 'Word ↔ PDF', icon: DocIcon },
   { id: 'image', label: 'Image formats', icon: ImageIcon },
   { id: 'compress', label: 'Resize for forms', icon: ResizeIcon }
@@ -34,6 +47,7 @@ const TABS = [
 
 const TAB_BLURB = {
   code: 'Paste or upload source code and get a syntax-highlighted PDF, ready to submit.',
+  markdown: 'Turn Markdown into a properly typeset PDF — light or dark, with code blocks kept whole.',
   document: 'Convert Word to PDF, or turn a PDF back into an editable Word document.',
   image: 'Switch between JPG, PNG and WebP without losing quality.',
   compress: 'Hit the exact size an exam or admission form demands.'
@@ -116,6 +130,24 @@ export default function App() {
         code: form.code
       })
     );
+  }
+
+  function handleMarkdownSubmit(form) {
+    const fields = {
+      filename: form.filename,
+      title: form.title,
+      subtitle: form.subtitle,
+      theme: form.theme,
+      pageSize: form.pageSize
+    };
+
+    if (form.file) {
+      if (!guardFile(form.file, form.extensions)) return;
+      run('document', () => convertMarkdownFileToPdf(form.file, fields, { onProgress: setProgress }));
+      return;
+    }
+
+    run('document', () => convertMarkdownToPdf({ ...fields, markdown: form.markdown }));
   }
 
   function handleDocumentSubmit({ mode, file, extensions, engine }) {
@@ -219,6 +251,10 @@ export default function App() {
           >
             {activeTab === 'code' && (
               <CodePanel onSubmit={handleCodeSubmit} isBusy={isBusy} maxFileSizeMb={maxFileSizeMb} />
+            )}
+
+            {activeTab === 'markdown' && (
+              <MarkdownPanel onSubmit={handleMarkdownSubmit} isBusy={isBusy} maxFileSizeMb={maxFileSizeMb} />
             )}
 
             {activeTab === 'document' && (

@@ -95,3 +95,15 @@ export const LANGUAGE_OPTIONS = [
   { value: 'markdown', label: 'Markdown' },
   { value: 'plaintext', label: 'Plain text' }
 ];
+
+export const MARKDOWN_EXTENSIONS = ['.md', '.markdown', '.mdown', '.txt'];
+
+export const PDF_THEMES = [
+  { value: 'light', label: 'Light — white page' },
+  { value: 'dark', label: 'Dark — dark page' }
+];
+
+export const PDF_PAGE_SIZES = [
+  { value: 'a4', label: 'A4' },
+  { value: 'letter', label: 'US Letter' }
+];

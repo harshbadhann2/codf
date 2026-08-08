@@ -180,6 +180,46 @@ then rebuilds the document as genuine Word content:
 
 `mode=layout` still routes to pdf2docx for the cases it genuinely wins.
 
+## Markdown → PDF: pagination is the feature
+
+Most Markdown-to-PDF tools render HTML and let a browser paginate. That is why
+their output has code blocks sliced across page boundaries and headings
+stranded at the bottom of a page — the renderer decides where to break after it
+has already committed to drawing.
+
+[`markdownPdf/`](../apps/api/src/services/markdownPdf) inverts that. Nothing is
+drawn until every block has been measured, so the break points are a decision:
+
+- [`inline.js`](../apps/api/src/services/markdownPdf/inline.js) flattens
+  marked's inline tree into styled segments, carrying bold/italic/code/link
+  through nesting.
+- [`typeset.js`](../apps/api/src/services/markdownPdf/typeset.js) wraps those
+  into lines with exact heights. PDFKit's own `text()` wraps too, but only
+  reports line counts *after* drawing, which is useless for this.
+- [`blocks.js`](../apps/api/src/services/markdownPdf/blocks.js) turns tokens
+  into blocks of measured rows, each carrying the rules that govern its breaks.
+- [`paginate.js`](../apps/api/src/services/markdownPdf/paginate.js) assigns rows
+  to pages under those rules:
+  1. a `keepTogether` block that fits on an empty page moves whole rather than
+     splitting — this is what stops code blocks being cut in half;
+  2. a block too tall for any page does split, but never leaves fewer than
+     three lines behind or carries fewer than three forward;
+  3. a heading must be followed on the same page by its successor — and when
+     that successor is itself `keepTogether`, the heading has to fit alongside
+     *all* of it, not just its opening lines;
+  4. a table continuing onto a new page repeats its header row.
+
+Two themes are supplied as complete palettes rather than one inverted at render
+time: syntax colours that read well on white are muddy on near-black, and the
+inverted look is exactly what makes most dark PDFs feel cheap.
+
+The body face is a PDF standard font, so it needs no embedding and has correct
+metrics everywhere; code uses the bundled JetBrains Mono so listings match the
+code→PDF converter. Standard fonts encode WinAnsi only, so arrows and maths
+symbols are transliterated to their ASCII equivalents ("→" becomes "->") rather
+than printed as an unrelated glyph, and anything genuinely unrenderable is
+dropped *and counted*, so the caller can say so.
+
 ## Upload validation
 
 Three independent checks, because the first two are attacker-controlled:

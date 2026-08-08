@@ -163,6 +163,7 @@ async function getCapabilities(options) {
     codeToPdf: { available: true, reason: '' },
     imageConvert: { available: true, reason: '' },
     imageCompress: { available: true, reason: '' },
+    markdownToPdf: { available: true, reason: '' },
     docxToPdf: {
       available: libreOffice.available,
       reason: libreOffice.reason,

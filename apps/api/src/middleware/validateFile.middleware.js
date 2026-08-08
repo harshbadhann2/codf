@@ -22,6 +22,11 @@ const profiles = {
     extensions: new Set(['.jpg', '.jpeg', '.png', '.webp']),
     signatures: new Set(['jpg', 'png', 'unknown']) // webp has no entry in our sniffer
   },
+  markdown: {
+    label: 'Markdown file',
+    extensions: new Set(['.md', '.markdown', '.mdown', '.txt']),
+    signatures: new Set(['unknown'])
+  },
   code: {
     label: 'source file',
     extensions: new Set(SUPPORTED_CODE_EXTENSIONS),

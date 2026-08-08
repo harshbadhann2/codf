@@ -146,6 +146,51 @@ function PageCard({ format = 'PDF', delay = 0.7, gutter = true }) {
   );
 }
 
+/* ── Markdown source ─────────────────────────────────────────── */
+function MarkdownCard({ delay = 0.35 }) {
+  const lines = [
+    { w: 46, hash: true },
+    { w: 0 },
+    { w: 92 },
+    { w: 74 },
+    { w: 0 },
+    { w: 58, bullet: true },
+    { w: 64, bullet: true }
+  ];
+
+  return (
+    <div className={`${CARD} p-3`}>
+      <div className="mb-2.5 flex items-center gap-1.5">
+        <span className="h-2 w-2 rounded-full bg-red-400/70" />
+        <span className="h-2 w-2 rounded-full bg-amber-400/70" />
+        <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
+        <span className="ml-1 font-mono text-[9px] text-[var(--ink-faint)]">README.md</span>
+      </div>
+
+      <div className="space-y-[7px]">
+        {lines.map((line, row) =>
+          line.w === 0 ? (
+            <div key={row} className="h-[5px]" />
+          ) : (
+            <div
+              key={row}
+              className="flex items-center gap-1.5"
+              style={{ animation: 'rise .5s var(--ease-out) both', animationDelay: `${delay + row * 0.06}s` }}
+            >
+              {line.hash && <span className="font-mono text-[8px] leading-none text-fuchsia-400/80">#</span>}
+              {line.bullet && <span className="font-mono text-[8px] leading-none text-sky-400/80">-</span>}
+              <span
+                className={`h-[5px] rounded-full ${line.hash ? 'bg-slate-300/80' : 'bg-slate-400/55'}`}
+                style={{ width: `${line.w}%` }}
+              />
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── A photo ──────────────────────────────────────────────────── */
 function PhotoCard({ format, weight, delay = 0.35, shrunk = false, animateIn = 'rise' }) {
   return (
@@ -182,6 +227,48 @@ function PhotoCard({ format, weight, delay = 0.35, shrunk = false, animateIn = '
   );
 }
 
+/* ── Typeset page ─────────────────────────────────────────────── */
+function TypesetCard({ delay = 0.65 }) {
+  return (
+    <div
+      className={`${CARD} bg-white/90 p-3 dark:bg-slate-100/95`}
+      style={{ animation: 'pop .6s var(--ease-spring) both', animationDelay: `${delay}s` }}
+    >
+      <div className="sheen" />
+
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <div className="flex-1 space-y-1">
+          <div className="h-[7px] w-[64%] rounded-full bg-slate-800/85" />
+          <div className="h-[1px] w-full bg-slate-300" />
+        </div>
+        <FormatChip label="PDF" tone="bg-red-500/15 text-red-600" />
+      </div>
+
+      <div className="pulse-lit space-y-[6px]">
+        {[94, 88, 70].map((width, row) => (
+          <div
+            key={row}
+            className="h-[4px] rounded-full bg-slate-300"
+            style={{ width: `${width}%`, animation: 'fade .4s ease-out both', animationDelay: `${delay + 0.2 + row * 0.05}s` }}
+          />
+        ))}
+      </div>
+
+      {/* The code panel is the point: whole, never sliced by a page break. */}
+      <div className="mt-2 rounded-md bg-slate-50 p-1.5 ring-1 ring-slate-900/10">
+        <div className="space-y-[5px]">
+          {[[22, 34], [16, 28], [30, 18]].map((pair, row) => (
+            <div key={row} className="flex items-center gap-1">
+              <span className="h-[3px] rounded-full bg-fuchsia-400/70" style={{ width: `${pair[0]}%` }} />
+              <span className="h-[3px] rounded-full bg-sky-400/70" style={{ width: `${pair[1]}%` }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Variants ─────────────────────────────────────────────────── */
 const VARIANTS = {
   code: {
@@ -190,6 +277,13 @@ const VARIANTS = {
     from: 'Your code',
     to: 'Submission-ready PDF',
     toShort: 'Ready to submit'
+  },
+  markdown: {
+    left: <MarkdownCard />,
+    right: <TypesetCard />,
+    from: 'Your Markdown',
+    to: 'Typeset PDF, light or dark',
+    toShort: 'Typeset PDF'
   },
   document: {
     left: <PageCard format="DOCX" delay={0.35} gutter={false} />,

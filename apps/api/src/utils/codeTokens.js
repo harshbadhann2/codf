@@ -55,22 +55,23 @@ const LIGHT_THEME = {
 };
 
 // Order matters: hljs stacks classes (e.g. "hljs-title hljs-function"), and the
-// first match here wins.
-function tokenColor(cssClass) {
+// first match here wins. `palette` lets a dark page supply hues tuned for its
+// own background instead of reusing light-page colours at low contrast.
+function tokenColor(cssClass, palette = LIGHT_THEME) {
   const value = cssClass || '';
 
-  if (value.includes('comment') || value.includes('quote')) return LIGHT_THEME.comment;
-  if (value.includes('string') || value.includes('regexp')) return LIGHT_THEME.string;
-  if (value.includes('keyword') || value.includes('selector-tag')) return LIGHT_THEME.keyword;
-  if (value.includes('number') || value.includes('literal')) return LIGHT_THEME.number;
-  if (value.includes('title') || value.includes('section')) return LIGHT_THEME.title;
-  if (value.includes('built_in') || value.includes('type') || value.includes('class')) return LIGHT_THEME.builtIn;
-  if (value.includes('attr') || value.includes('property')) return LIGHT_THEME.attr;
-  if (value.includes('meta') || value.includes('doctag')) return LIGHT_THEME.meta;
-  if (value.includes('variable') || value.includes('symbol') || value.includes('template')) return LIGHT_THEME.variable;
-  if (value.includes('operator') || value.includes('punctuation')) return LIGHT_THEME.operator;
+  if (value.includes('comment') || value.includes('quote')) return palette.comment;
+  if (value.includes('string') || value.includes('regexp')) return palette.string;
+  if (value.includes('keyword') || value.includes('selector-tag')) return palette.keyword;
+  if (value.includes('number') || value.includes('literal')) return palette.number;
+  if (value.includes('title') || value.includes('section')) return palette.title;
+  if (value.includes('built_in') || value.includes('type') || value.includes('class')) return palette.builtIn;
+  if (value.includes('attr') || value.includes('property')) return palette.attr;
+  if (value.includes('meta') || value.includes('doctag')) return palette.meta;
+  if (value.includes('variable') || value.includes('symbol') || value.includes('template')) return palette.variable;
+  if (value.includes('operator') || value.includes('punctuation')) return palette.operator;
 
-  return LIGHT_THEME.base;
+  return palette.base;
 }
 
 function isCommentToken(cssClass) {

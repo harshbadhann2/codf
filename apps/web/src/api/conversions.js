@@ -4,6 +4,14 @@ export function fetchHealth(options) {
   return apiGet('/health', options);
 }
 
+export function convertMarkdownToPdf(payload, options) {
+  return apiPostJson('/convert/markdown-to-pdf', payload, options);
+}
+
+export function convertMarkdownFileToPdf(file, fields, options) {
+  return apiPostForm('/convert/markdown-file-to-pdf', formDataFor(file, fields), options);
+}
+
 export function convertCodeToPdf(payload, options) {
   return apiPostJson('/convert/code-to-pdf', payload, options);
 }

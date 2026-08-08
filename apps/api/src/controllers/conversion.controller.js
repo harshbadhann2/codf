@@ -16,6 +16,7 @@ const { parseCodeFile } = require('../services/codeFile.service');
 const { convertDocxToPdf, convertPdfToDocx } = require('../services/document.service');
 const { convertImage } = require('../services/image.service');
 const { compressToTarget } = require('../services/imageCompress.service');
+const { renderMarkdownPdf } = require('../services/markdownPdf.service');
 
 /**
  * Builds the response payload for a finished conversion.
@@ -79,6 +80,43 @@ const codeToPdfController = asyncHandler(async (req, res) => {
   );
 
   finish(req, res, result, { detectedLanguage: result.detectedLanguage, lineCount: result.lineCount });
+});
+
+const markdownToPdfController = asyncHandler(async (req, res) => {
+  const { markdown, filename, title, subtitle, theme, pageSize } = req.body || {};
+
+  const result = await conversionQueue.run('markdown-to-pdf', () =>
+    renderMarkdownPdf({ markdown, filename, title, subtitle, theme, pageSize })
+  );
+
+  finish(req, res, result, {
+    pageCount: result.pageCount,
+    themeUsed: result.themeUsed,
+    droppedGlyphs: result.droppedGlyphs
+  });
+});
+
+const markdownFileToPdfController = asyncHandler(async (req, res) => {
+  const baseName = originalBaseName(req);
+
+  const result = await withUpload(req, 'markdown-file-to-pdf', async (uploadedPath) => {
+    const markdown = await fsp.readFile(uploadedPath, 'utf8');
+
+    return renderMarkdownPdf({
+      markdown,
+      filename: req.body.filename || baseName,
+      title: req.body.title,
+      subtitle: req.body.subtitle,
+      theme: req.body.theme,
+      pageSize: req.body.pageSize
+    });
+  });
+
+  finish(req, res, result, {
+    pageCount: result.pageCount,
+    themeUsed: result.themeUsed,
+    droppedGlyphs: result.droppedGlyphs
+  });
 });
 
 const codeFileToPdfController = asyncHandler(async (req, res) => {
@@ -247,6 +285,8 @@ const downloadFileController = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  markdownToPdfController,
+  markdownFileToPdfController,
   imageCompressController,
   codeToPdfController,
   codeFileToPdfController,

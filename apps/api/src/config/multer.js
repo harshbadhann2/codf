@@ -8,6 +8,9 @@ const { ensureWorkspace } = require('../utils/workspace');
 const { SUPPORTED_CODE_EXTENSIONS } = require('../services/codeFile.service');
 
 const ALLOWED_EXTENSIONS = new Set([
+  '.md',
+  '.markdown',
+  '.mdown',
   '.docx',
   '.pdf',
   '.jpg',

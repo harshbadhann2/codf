@@ -25,6 +25,16 @@ export function CodeIcon(props) {
   );
 }
 
+export function MarkdownIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+      <path d="M6 15.5v-7l3 3.5 3-3.5v7" />
+      <path d="M16 8.5v7m0 0 2.2-2.4M16 15.5l-2.2-2.4" />
+    </svg>
+  );
+}
+
 export function DocIcon(props) {
   return (
     <svg {...base} {...props}>

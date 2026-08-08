@@ -11,7 +11,9 @@ const {
   docxToPdfController,
   pdfToDocxController,
   imageConvertController,
-  imageCompressController
+  imageCompressController,
+  markdownToPdfController,
+  markdownFileToPdfController
 } = require('../controllers/conversion.controller');
 
 const router = express.Router();
@@ -19,6 +21,10 @@ const router = express.Router();
 router.use(conversionLimiter);
 
 router.post('/code-to-pdf', express.json({ limit: '2mb' }), codeToPdfController);
+
+router.post('/markdown-to-pdf', express.json({ limit: '2mb' }), markdownToPdfController);
+
+router.post('/markdown-file-to-pdf', uploadSingle, validateUploadedFile('markdown'), markdownFileToPdfController);
 
 router.post('/code-file-to-pdf', uploadSingle, validateUploadedFile('code'), codeFileToPdfController);
 
