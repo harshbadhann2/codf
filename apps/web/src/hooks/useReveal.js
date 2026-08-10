@@ -23,10 +23,13 @@ export function useReveal(deps = []) {
       return undefined;
     }
 
+    let fired = false;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
+          fired = true;
           entry.target.classList.add('is-visible');
           observer.unobserve(entry.target);
         });
@@ -35,7 +38,24 @@ export function useReveal(deps = []) {
     );
 
     targets.forEach((node) => observer.observe(node));
-    return () => observer.disconnect();
+
+    // Failsafe. The observer can exist and still never call back — a tab that
+    // was prerendered or backgrounded, some in-app webviews — and the failure
+    // mode is the worst one available: a blank page, because every section is
+    // waiting at opacity 0 for a callback that is not coming. Something above
+    // the fold always intersects immediately here, so nothing having fired by
+    // now means the observer is not working; show everything and stop relying
+    // on it. Content being visible beats its entrance animation.
+    const failsafe = setTimeout(() => {
+      if (fired) return;
+      targets.forEach((node) => node.classList.add('is-visible'));
+      observer.disconnect();
+    }, 1200);
+
+    return () => {
+      clearTimeout(failsafe);
+      observer.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 

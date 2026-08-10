@@ -13,6 +13,7 @@ import ProgressBar from './components/ProgressBar';
 import TabBar from './components/TabBar';
 import Hero, { TrustChips } from './components/Hero';
 import Logo from './components/Logo';
+import ContactCard from './components/ContactCard';
 import {
   CodeIcon,
   DocIcon,
@@ -375,9 +376,17 @@ export default function App() {
           </aside>
         </main>
 
-        <footer className="reveal mt-14 border-t border-[var(--line)] pt-6 text-center">
+        <ContactCard />
+
+        <footer className="reveal mt-12 border-t border-[var(--line)] pt-6 text-center">
           <p className="text-xs text-[var(--ink-faint)]">
-            Built by Harsh Badhan · Frontend on Vercel, API on Render
+            Built by Harsh Badhan ·{' '}
+            <a
+              href="mailto:badhann.work@gmail.com"
+              className="focus-ring underline decoration-[var(--line-strong)] underline-offset-2 transition hover:text-[var(--accent)]"
+            >
+              badhann.work@gmail.com
+            </a>
           </p>
           {health?.version && (
             /* Version stays for support, but as a tooltip rather than a build

@@ -196,6 +196,10 @@ Confirm with `curl localhost:3030/api/health | jq .data.capabilities`.
 - `.doc` (the pre-2007 format) is not supported — only `.docx`.
 - Uploads are capped at 10 MB and PDFs at 60 pages by default. Both are configurable, but raising them on a 512 MB instance invites OOM kills.
 
+## Contact
+
+Suggestions, bug reports and feature requests: **badhann.work@gmail.com**.
+
 ## Licence
 
 JetBrains Mono is bundled under the [SIL Open Font License 1.1](https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt).

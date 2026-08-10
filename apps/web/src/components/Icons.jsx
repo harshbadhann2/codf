@@ -99,6 +99,24 @@ export function CheckIcon(props) {
   );
 }
 
+export function MailIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+      <path d="m3.5 7 7.4 5.3a2 2 0 0 0 2.2 0L20.5 7" />
+    </svg>
+  );
+}
+
+export function CopyIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="9" y="9" width="11.5" height="11.5" rx="2.5" />
+      <path d="M15 6.5V6a2.5 2.5 0 0 0-2.5-2.5H6A2.5 2.5 0 0 0 3.5 6v6.5A2.5 2.5 0 0 0 6 15h.5" />
+    </svg>
+  );
+}
+
 export function ShieldIcon(props) {
   return (
     <svg {...base} {...props}>
