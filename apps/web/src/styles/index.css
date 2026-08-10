@@ -33,6 +33,13 @@
   --accent-2: #d4530a;
   --accent-2-soft: #ffe6d2;
 
+  /* CTA button gradient. Same hue pair as the accents but its own tokens, so
+     it can be tuned for legibility on a solid fill without dragging every
+     other accent-coloured element (borders, focus rings, the tab thumb)
+     along with it. */
+  --cta-a: var(--accent-2);
+  --cta-b: var(--accent);
+
   --glow-1: rgba(251, 146, 60, 0.3);
   --glow-2: rgba(13, 148, 136, 0.28);
   --glow-3: rgba(99, 102, 241, 0.16);
@@ -67,6 +74,14 @@
   --accent-ink: #04211e;
   --accent-2: #ffa14d;
   --accent-2-soft: rgba(255, 161, 77, 0.16);
+
+  /* The plain accent pastels read as a candy gradient once they cover a whole
+     button rather than tinting an edge or a border — fine at low-alpha, cheap
+     at full strength on near-black. These are the same two hues pulled darker
+     and more saturated, so the button reads as metal catching light rather
+     than a soap bubble. */
+  --cta-a: #e07a30;
+  --cta-b: #0fae97;
 
   --glow-1: rgba(249, 115, 22, 0.2);
   --glow-2: rgba(20, 184, 166, 0.22);
@@ -563,8 +578,11 @@ select.field {
   font-weight: 700;
   font-size: 0.9rem;
   color: #fff;
-  background: linear-gradient(115deg, var(--accent-2), var(--accent) 78%);
-  box-shadow: var(--shadow-glow);
+  background: linear-gradient(135deg, var(--cta-a), var(--cta-b) 78%);
+  box-shadow:
+    var(--shadow-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s, filter 0.2s;
 }
 

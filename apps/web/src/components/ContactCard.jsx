@@ -2,10 +2,19 @@ import { useState } from 'react';
 import { CheckIcon, CopyIcon, MailIcon } from './Icons';
 
 const EMAIL = 'badhann.work@gmail.com';
+const SUBJECT = 'coDF — feedback';
 
 // A prefilled subject keeps real feedback out of the spam pile and makes it
 // filterable once there is more than a trickle of it.
-const MAILTO = `mailto:${EMAIL}?subject=${encodeURIComponent('coDF — feedback')}`;
+const MAILTO = `mailto:${EMAIL}?subject=${encodeURIComponent(SUBJECT)}`;
+
+// `mailto:` silently does nothing on a machine with no mail client set as the
+// OS default — increasingly the common case in a plain browser — so the
+// primary action goes straight to Gmail's own compose screen instead, which
+// works with no local configuration and matches the address itself. `mailto:`
+// stays underneath as the address pill, for anyone who does have a client and
+// prefers it.
+const GMAIL_COMPOSE = `https://mail.google.com/mail/?view=cm&fs=1&to=${EMAIL}&su=${encodeURIComponent(SUBJECT)}`;
 
 /**
  * Contact panel.
@@ -75,7 +84,7 @@ export default function ContactCard() {
           </a>
 
           <div className="flex gap-2">
-            <a href={MAILTO} className="btn-primary focus-ring">
+            <a href={GMAIL_COMPOSE} target="_blank" rel="noopener noreferrer" className="btn-primary focus-ring">
               <MailIcon width={15} height={15} />
               Send an email
             </a>
