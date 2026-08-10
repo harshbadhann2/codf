@@ -220,6 +220,31 @@ symbols are transliterated to their ASCII equivalents ("→" becomes "->") rathe
 than printed as an unrelated glyph, and anything genuinely unrenderable is
 dropped *and counted*, so the caller can say so.
 
+## Reading text out of images
+
+Tesseract runs locally in the container rather than through a cloud OCR API.
+The site promises no third-party upload, and shipping users' documents to
+Google or AWS to be read would quietly break that.
+
+Two things about the implementation are worth knowing, because both are the
+opposite of the common advice:
+
+**Preprocessing is minimal, deliberately.** The standard guidance — binarise,
+stretch contrast, normalise — was written for Tesseract's legacy template
+matcher. The LSTM engine normalises internally, and measured against a page
+with known contents those steps ranged from pointless to destructive:
+aggressive contrast clipped faint strokes and cost accuracy, and sharp's
+`normalise()` shifted the gamma so far that recall fell from 100% to 6%. What
+survives is greyscale, a resize toward the ~300 dpi the engine was trained at,
+and a light sharpen to recover edges lost in that resample.
+
+**PDFs are not OCRed by default.** A PDF from Word or LaTeX already carries its
+text; recognising it from a picture would be slower *and* less accurate than
+reading what the file already states. So each page is read first, and only
+pages with no usable text layer are rasterised and recognised. The response
+reports which pages took which route, and the UI says so — copied text is
+exact, recognised text is a guess worth checking.
+
 ## Upload validation
 
 Three independent checks, because the first two are attacker-controlled:

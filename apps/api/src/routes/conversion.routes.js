@@ -13,7 +13,9 @@ const {
   imageConvertController,
   imageCompressController,
   markdownToPdfController,
-  markdownFileToPdfController
+  markdownFileToPdfController,
+  imageToTextController,
+  pdfToTextController
 } = require('../controllers/conversion.controller');
 
 const router = express.Router();
@@ -45,6 +47,22 @@ router.post(
 );
 
 router.post('/image', uploadSingle, validateUploadedFile('image'), imageConvertController);
+
+router.post(
+  '/image-to-text',
+  uploadSingle,
+  validateUploadedFile('image'),
+  requireCapability('imageToText'),
+  imageToTextController
+);
+
+router.post(
+  '/pdf-to-text',
+  uploadSingle,
+  validateUploadedFile('pdf'),
+  requireCapability('pdfToText'),
+  pdfToTextController
+);
 
 router.post('/image-compress', uploadSingle, validateUploadedFile('image'), imageCompressController);
 

@@ -4,6 +4,8 @@ import MarkdownPanel from './components/MarkdownPanel';
 import DocumentPanel from './components/DocumentPanel';
 import ImagePanel from './components/ImagePanel';
 import CompressPanel from './components/CompressPanel';
+import ExtractPanel from './components/ExtractPanel';
+import TextResult from './components/TextResult';
 import ResultCard from './components/ResultCard';
 import ServerStatusBanner from './components/ServerStatusBanner';
 import Spinner from './components/Spinner';
@@ -19,7 +21,8 @@ import {
   MoonIcon,
   ResizeIcon,
   ShieldIcon,
-  SunIcon
+  SunIcon,
+  TextScanIcon
 } from './components/Icons';
 import { useServerStatus } from './hooks/useServerStatus';
 import { useTheme } from './hooks/useTheme';
@@ -34,7 +37,9 @@ import {
   convertMarkdownFileToPdf,
   convertDocxToPdf,
   convertImage,
-  convertPdfToDocx
+  convertPdfToDocx,
+  extractTextFromImage,
+  extractTextFromPdf
 } from './api/conversions';
 
 const TABS = [
@@ -42,7 +47,8 @@ const TABS = [
   { id: 'markdown', label: 'Markdown → PDF', icon: MarkdownIcon },
   { id: 'document', label: 'Word ↔ PDF', icon: DocIcon },
   { id: 'image', label: 'Image formats', icon: ImageIcon },
-  { id: 'compress', label: 'Resize for forms', icon: ResizeIcon }
+  { id: 'compress', label: 'Resize for forms', icon: ResizeIcon },
+  { id: 'extract', label: 'Image → Text', icon: TextScanIcon }
 ];
 
 const TAB_BLURB = {
@@ -50,7 +56,8 @@ const TAB_BLURB = {
   markdown: 'Turn Markdown into a properly typeset PDF — light or dark, with code blocks kept whole.',
   document: 'Convert Word to PDF, or turn a PDF back into an editable Word document.',
   image: 'Switch between JPG, PNG and WebP without losing quality.',
-  compress: 'Hit the exact size an exam or admission form demands.'
+  compress: 'Hit the exact size an exam or admission form demands.',
+  extract: 'Pull the words out of a screenshot, photo or scan so you can copy and paste them.'
 };
 
 const FALLBACK_MAX_FILE_SIZE_MB = Number(import.meta.env.VITE_MAX_FILE_SIZE_MB || 10);
@@ -171,6 +178,13 @@ export default function App() {
     run('compress', () => compressImage(file, fields, { onProgress: setProgress }));
   }
 
+  function handleExtractSubmit({ source, file, extensions, fields }) {
+    if (!guardFile(file, extensions)) return;
+
+    const call = source === 'pdf' ? extractTextFromPdf : extractTextFromImage;
+    run('text', () => call(file, fields, { onProgress: setProgress }));
+  }
+
   return (
     <div ref={revealRef} className="relative min-h-full">
       <div className="ambient" aria-hidden="true">
@@ -275,6 +289,16 @@ export default function App() {
             {activeTab === 'compress' && (
               <CompressPanel onSubmit={handleCompressSubmit} isBusy={isBusy} maxFileSizeMb={maxFileSizeMb} />
             )}
+
+            {activeTab === 'extract' && (
+              <ExtractPanel
+                onSubmit={handleExtractSubmit}
+                isBusy={isBusy}
+                maxFileSizeMb={maxFileSizeMb}
+                can={can}
+                reasonFor={reasonFor}
+              />
+            )}
           </section>
 
           <aside className="space-y-4 lg:sticky lg:top-6">
@@ -312,7 +336,13 @@ export default function App() {
                   </div>
                 )}
 
-                {result && !isBusy && <ResultCard result={result} onReset={resetFeedback} />}
+                {result && !isBusy && result.kind === 'text' && (
+                  <TextResult result={result} onReset={resetFeedback} />
+                )}
+
+                {result && !isBusy && result.kind !== 'text' && (
+                  <ResultCard result={result} onReset={resetFeedback} />
+                )}
 
                 {!isBusy && !error && !result && (
                   <div className="flex flex-col items-center gap-2 py-6 text-center">

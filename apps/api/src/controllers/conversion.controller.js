@@ -17,6 +17,7 @@ const { convertDocxToPdf, convertPdfToDocx } = require('../services/document.ser
 const { convertImage } = require('../services/image.service');
 const { compressToTarget } = require('../services/imageCompress.service');
 const { renderMarkdownPdf } = require('../services/markdownPdf.service');
+const { extractTextFromImage, extractTextFromPdf } = require('../services/ocr.service');
 
 /**
  * Builds the response payload for a finished conversion.
@@ -244,6 +245,53 @@ const imageCompressController = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Extraction returns the text inline as well as a .txt download, because the
+ * point of the feature is usually to paste it somewhere, not to keep a file.
+ */
+function finishExtraction(req, res, result) {
+  finish(req, res, result, {
+    text: result.text,
+    characters: result.characters,
+    words: result.words,
+    pages: result.pages,
+    textPages: result.textPages,
+    ocrPages: result.ocrPages,
+    ocrUsed: result.ocrUsed
+  });
+}
+
+const imageToTextController = asyncHandler(async (req, res) => {
+  const baseName = originalBaseName(req);
+
+  const result = await withUpload(req, 'image-to-text', (uploadedPath) =>
+    extractTextFromImage({
+      inputPath: uploadedPath,
+      originalBaseName: baseName,
+      language: req.body.language,
+      mode: req.body.mode
+    })
+  );
+
+  finishExtraction(req, res, result);
+});
+
+const pdfToTextController = asyncHandler(async (req, res) => {
+  const baseName = originalBaseName(req);
+
+  const result = await withUpload(req, 'pdf-to-text', (uploadedPath) =>
+    extractTextFromPdf({
+      inputPath: uploadedPath,
+      originalBaseName: baseName,
+      language: req.body.language,
+      mode: req.body.mode,
+      forceOcr: req.body.forceOcr === 'true' || req.body.forceOcr === true
+    })
+  );
+
+  finishExtraction(req, res, result);
+});
+
 const downloadFileController = asyncHandler(async (req, res) => {
   const outputPath = resolveOutputFilePath(req.params.fileName);
   const stats = await fsp.stat(outputPath).catch(() => null);
@@ -285,6 +333,8 @@ const downloadFileController = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  imageToTextController,
+  pdfToTextController,
   markdownToPdfController,
   markdownFileToPdfController,
   imageCompressController,

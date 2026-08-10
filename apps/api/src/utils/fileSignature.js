@@ -33,6 +33,17 @@ async function detectFileSignature(filePath) {
     return 'jpg';
   }
 
+  // WebP is a RIFF container: "RIFF" then a size, then "WEBP". Detecting it
+  // properly is what lets the image profile stop accepting unknown bytes —
+  // which previously meant any file renamed .png passed validation.
+  if (
+    header.length >= 12 &&
+    header.subarray(0, 4).toString('latin1') === 'RIFF' &&
+    header.subarray(8, 12).toString('latin1') === 'WEBP'
+  ) {
+    return 'webp';
+  }
+
   // .docx is a zip container. PK\x03\x04 is a normal archive; PK\x05\x06 and
   // PK\x07\x08 are the empty and spanned variants.
   if (header.length >= 4 && header[0] === 0x50 && header[1] === 0x4b) {

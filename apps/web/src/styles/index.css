@@ -9,31 +9,38 @@
    boxes on a flat colour. */
 
 :root {
-  --bg: #f7f4ee;
-  --bg-deep: #efe9df;
+  /* Light theme.
+     The previous values were warm greys throughout, which read as tasteful but
+     timid — nothing on the page had any conviction. These raise the contrast of
+     the ink, deepen the accents so they carry against a bright page, and let
+     the ambient colour actually show instead of washing to beige. */
+  --bg: #f6f4ef;
+  --bg-deep: #e9e4da;
   --surface: 255 255 255;
-  --surface-alpha: 0.7;
-  --surface-solid: #fffdfa;
-  --ink: #121826;
-  --ink-muted: #5b6678;
-  --ink-faint: #8b95a5;
-  --line: rgba(18, 24, 38, 0.1);
-  --line-strong: rgba(18, 24, 38, 0.16);
+  --surface-alpha: 0.78;
+  --surface-solid: #ffffff;
+  --ink: #0d1420;
+  --ink-muted: #4b586b;
+  --ink-faint: #7d8899;
+  --line: rgba(13, 20, 32, 0.11);
+  --line-strong: rgba(13, 20, 32, 0.2);
 
-  --accent: #0e7c72;
-  --accent-soft: #d6f2ee;
+  /* Deeper and more saturated: the old teal went muddy against white, and the
+     orange was closer to brown than to a highlight. */
+  --accent: #0b6e66;
+  --accent-soft: #cdefe9;
   --accent-ink: #ffffff;
-  --accent-2: #e2620f;
-  --accent-2-soft: #fdead9;
+  --accent-2: #d4530a;
+  --accent-2-soft: #ffe6d2;
 
-  --glow-1: rgba(249, 130, 45, 0.2);
-  --glow-2: rgba(13, 148, 136, 0.2);
-  --glow-3: rgba(99, 102, 241, 0.1);
+  --glow-1: rgba(251, 146, 60, 0.3);
+  --glow-2: rgba(13, 148, 136, 0.28);
+  --glow-3: rgba(99, 102, 241, 0.16);
 
-  --shadow-sm: 0 1px 2px rgba(18, 24, 38, 0.05);
-  --shadow-md: 0 8px 24px -12px rgba(18, 24, 38, 0.22);
-  --shadow-lg: 0 28px 60px -28px rgba(18, 24, 38, 0.35);
-  --shadow-glow: 0 12px 32px -14px rgba(14, 124, 114, 0.5);
+  --shadow-sm: 0 1px 2px rgba(13, 20, 32, 0.06);
+  --shadow-md: 0 10px 28px -14px rgba(13, 20, 32, 0.26);
+  --shadow-lg: 0 30px 64px -30px rgba(13, 20, 32, 0.4);
+  --shadow-glow: 0 12px 30px -12px rgba(11, 110, 102, 0.45);
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.22, 1.4, 0.36, 1);
@@ -42,30 +49,32 @@
 }
 
 :root.dark {
-  --bg: #060911;
-  --bg-deep: #030509;
-  --surface: 20 28 44;
-  --surface-alpha: 0.62;
-  --surface-solid: #101828;
-  --ink: #eef2f9;
-  --ink-muted: #99a4b8;
-  --ink-faint: #64708a;
-  --line: rgba(255, 255, 255, 0.09);
-  --line-strong: rgba(255, 255, 255, 0.16);
+  /* Dark theme. Slightly lifted from near-black so the surfaces separate, with
+     a touch of blue in the base — a neutral grey dark mode always looks dead. */
+  --bg: #070b14;
+  --bg-deep: #04060c;
+  --surface: 22 31 48;
+  --surface-alpha: 0.66;
+  --surface-solid: #111a2b;
+  --ink: #f0f4fa;
+  --ink-muted: #9daabf;
+  --ink-faint: #6a7793;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.19);
 
-  --accent: #2dd4bf;
-  --accent-soft: rgba(45, 212, 191, 0.14);
+  --accent: #35e0c8;
+  --accent-soft: rgba(53, 224, 200, 0.16);
   --accent-ink: #04211e;
-  --accent-2: #fb923c;
-  --accent-2-soft: rgba(251, 146, 60, 0.14);
+  --accent-2: #ffa14d;
+  --accent-2-soft: rgba(255, 161, 77, 0.16);
 
-  --glow-1: rgba(249, 115, 22, 0.16);
-  --glow-2: rgba(20, 184, 166, 0.18);
-  --glow-3: rgba(129, 140, 248, 0.12);
+  --glow-1: rgba(249, 115, 22, 0.2);
+  --glow-2: rgba(20, 184, 166, 0.22);
+  --glow-3: rgba(129, 140, 248, 0.16);
 
-  --shadow-md: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 28px 60px -28px rgba(0, 0, 0, 0.75);
-  --shadow-glow: 0 12px 32px -14px rgba(45, 212, 191, 0.35);
+  --shadow-md: 0 10px 28px -14px rgba(0, 0, 0, 0.65);
+  --shadow-lg: 0 30px 64px -30px rgba(0, 0, 0, 0.8);
+  --shadow-glow: 0 12px 32px -14px rgba(53, 224, 200, 0.35);
 }
 
 * {

@@ -107,3 +107,9 @@ export const PDF_PAGE_SIZES = [
   { value: 'a4', label: 'A4' },
   { value: 'letter', label: 'US Letter' }
 ];
+
+export const EXTRACT_MODES = [
+  { value: 'auto', label: 'Automatic — a page or photo' },
+  { value: 'block', label: 'One block — a screenshot' },
+  { value: 'line', label: 'A single line' }
+];

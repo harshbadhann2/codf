@@ -54,6 +54,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       # Runtime shared libs for opencv-python-headless and PyMuPDF.
       libglib2.0-0 \
       libgomp1 \
+      # OCR: the engine plus English data and the orientation/script model,
+      # which is what lets it cope with a page photographed sideways.
+      tesseract-ocr \
+      tesseract-ocr-eng \
+      tesseract-ocr-osd \
       # Metric-compatible stand-ins for Arial/Times/Courier. Without these,
       # .docx files that use Microsoft fonts reflow and repaginate on export.
       fonts-liberation2 \
@@ -82,6 +87,7 @@ ENV NODE_ENV=production \
     WORK_DIR=/var/tmp/codf \
     LIBREOFFICE_PATH=/usr/bin/soffice \
     PYTHON_PATH=/opt/venv/bin/python3 \
+    TESSERACT_PATH=/usr/bin/tesseract \
     HOME=/var/tmp/codf \
     NODE_OPTIONS=--max-old-space-size=320
 

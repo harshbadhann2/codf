@@ -41,6 +41,16 @@ function libreOfficeCandidates() {
   return candidatePaths(env.libreOfficePath, extras);
 }
 
+function tesseractCandidates() {
+  const extras = ['tesseract', '/usr/bin/tesseract', '/usr/local/bin/tesseract'];
+
+  if (process.platform === 'darwin') {
+    extras.push('/opt/homebrew/bin/tesseract');
+  }
+
+  return candidatePaths(env.tesseractPath, extras);
+}
+
 function pythonCandidates() {
   const extras = ['/opt/venv/bin/python3', 'python3', 'python'];
 
@@ -59,7 +69,8 @@ function isSpawnable(candidate) {
 
 const state = {
   libreOffice: { checkedAt: 0, available: false, binary: '', version: '', reason: 'not probed yet' },
-  python: { checkedAt: 0, available: false, binary: '', version: '', reason: 'not probed yet' }
+  python: { checkedAt: 0, available: false, binary: '', version: '', reason: 'not probed yet' },
+  ocr: { checkedAt: 0, available: false, binary: '', version: '', reason: 'not probed yet' }
 };
 
 const inFlight = new Map();
@@ -127,7 +138,44 @@ async function probePython() {
   };
 }
 
-const probes = { libreOffice: probeLibreOffice, python: probePython };
+async function probeOcr() {
+  for (const candidate of tesseractCandidates()) {
+    if (!isSpawnable(candidate)) continue;
+
+    try {
+      const { stdout } = await runCommand(candidate, ['--version'], { timeoutMs: PROBE_TIMEOUT_MS });
+      const version = stdout.trim().split('\n')[0] || 'tesseract';
+
+      // A working binary with no language data recognises nothing, so the
+      // languages are part of the check rather than an assumption.
+      const langs = await runCommand(candidate, ['--list-langs'], { timeoutMs: PROBE_TIMEOUT_MS })
+        .then(({ stdout: out }) => out.trim().split('\n').slice(1).map((line) => line.trim()).filter(Boolean))
+        .catch(() => []);
+
+      if (!langs.includes(env.ocrLanguage)) {
+        return {
+          available: false,
+          binary: candidate,
+          version,
+          reason: `Tesseract is installed but has no "${env.ocrLanguage}" language data.`
+        };
+      }
+
+      return { available: true, binary: candidate, version: `${version} (${langs.join(', ')})`, reason: '' };
+    } catch (error) {
+      logger.debug('Tesseract candidate rejected', { candidate, error: error.message });
+    }
+  }
+
+  return {
+    available: false,
+    binary: '',
+    version: '',
+    reason: 'Tesseract OCR was not found. Install it and set TESSERACT_PATH (macOS: brew install tesseract).'
+  };
+}
+
+const probes = { libreOffice: probeLibreOffice, python: probePython, ocr: probeOcr };
 
 async function getCapability(name, { force = false } = {}) {
   const current = state[name];
@@ -154,9 +202,10 @@ async function getCapability(name, { force = false } = {}) {
 
 /** Feature-level view used by /api/health and the capability guard middleware. */
 async function getCapabilities(options) {
-  const [libreOffice, python] = await Promise.all([
+  const [libreOffice, python, ocr] = await Promise.all([
     getCapability('libreOffice', options),
-    getCapability('python', options)
+    getCapability('python', options),
+    getCapability('ocr', options)
   ]);
 
   return {
@@ -173,6 +222,17 @@ async function getCapabilities(options) {
       available: python.available,
       reason: python.reason,
       engine: python.available ? python.version : ''
+    },
+    imageToText: {
+      available: ocr.available,
+      reason: ocr.reason,
+      engine: ocr.available ? ocr.version : ''
+    },
+    pdfToText: {
+      // A normal PDF needs only PyMuPDF; OCR is the fallback for scans.
+      available: python.available,
+      reason: python.reason,
+      engine: ocr.available ? 'text layer + OCR fallback' : 'text layer only'
     }
   };
 }

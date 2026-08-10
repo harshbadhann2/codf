@@ -269,6 +269,44 @@ function TypesetCard({ delay = 0.65 }) {
   );
 }
 
+/* ── Selectable text ──────────────────────────────────────────── */
+function TextSheetCard({ delay = 0.65 }) {
+  return (
+    <div
+      className={`${CARD} p-3`}
+      style={{ animation: 'pop .6s var(--ease-spring) both', animationDelay: `${delay}s` }}
+    >
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="font-mono text-[9px] text-[var(--ink-faint)]">extracted.txt</span>
+        <FormatChip label="TXT" tone="bg-[var(--accent-soft)] text-[var(--accent)]" />
+      </div>
+
+      {/* Selection highlight behind the lines: the whole point is that these
+          words can now be picked up and pasted. */}
+      <div className="pulse-lit space-y-[6px]">
+        {[90, 96, 72, 84, 58].map((width, row) => (
+          <div
+            key={row}
+            className="h-[5px] rounded-[2px] bg-[var(--accent)]/35"
+            style={{
+              width: `${width}%`,
+              animation: 'fade .4s ease-out both',
+              animationDelay: `${delay + 0.15 + row * 0.06}s`
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="mt-2.5 flex items-center gap-1">
+        <span className="rounded bg-[var(--accent)] px-1.5 py-[3px] text-[7px] font-bold uppercase tracking-wider text-white">
+          Copy
+        </span>
+        <span className="h-[3px] w-8 rounded-full bg-[var(--line-strong)]" />
+      </div>
+    </div>
+  );
+}
+
 /* ── Variants ─────────────────────────────────────────────────── */
 const VARIANTS = {
   code: {
@@ -299,6 +337,13 @@ const VARIANTS = {
     from: 'Any image',
     to: 'JPG · PNG · WebP',
     toShort: 'Any format'
+  },
+  extract: {
+    left: <PhotoCard format="JPG" weight="a photo" />,
+    right: <TextSheetCard />,
+    from: 'Picture of text',
+    to: 'Text you can copy',
+    toShort: 'Copyable text'
   },
   compress: {
     left: <PhotoCard format="JPG" weight="2.4 MB" />,

@@ -78,6 +78,9 @@ const env = {
   libreOfficeTimeoutMs: toInt(process.env.LIBREOFFICE_TIMEOUT_MS, 120000),
 
   pythonPath: process.env.PYTHON_PATH || '',
+  tesseractPath: process.env.TESSERACT_PATH || '',
+  ocrLanguage: process.env.OCR_LANGUAGE || 'eng',
+  ocrTimeoutMs: toInt(process.env.OCR_TIMEOUT_MS, 150000),
   pdfToDocxTimeoutMs: toInt(process.env.PDF_TO_DOCX_TIMEOUT_MS, 150000),
   pdfToDocxMaxPages: toInt(process.env.PDF_TO_DOCX_MAX_PAGES, 60),
 

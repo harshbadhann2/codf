@@ -6,7 +6,7 @@ const { AppError } = require('./AppError');
 
 // Output names are server-generated UUIDs. Anything else is rejected before it
 // can reach the filesystem, so `..` traversal never gets a chance.
-const SAFE_OUTPUT_NAME = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.(pdf|docx|png|jpg|webp)$/i;
+const SAFE_OUTPUT_NAME = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.(pdf|docx|png|jpg|webp|txt)$/i;
 
 function resolveOutputFilePath(fileName) {
   if (!SAFE_OUTPUT_NAME.test(fileName || '')) {

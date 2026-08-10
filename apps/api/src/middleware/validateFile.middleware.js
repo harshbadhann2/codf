@@ -20,7 +20,7 @@ const profiles = {
   image: {
     label: 'image',
     extensions: new Set(['.jpg', '.jpeg', '.png', '.webp']),
-    signatures: new Set(['jpg', 'png', 'unknown']) // webp has no entry in our sniffer
+    signatures: new Set(['jpg', 'png', 'webp'])
   },
   markdown: {
     label: 'Markdown file',

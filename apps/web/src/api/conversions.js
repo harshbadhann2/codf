@@ -45,6 +45,14 @@ export function convertImage(file, fields, options) {
   return apiPostForm('/convert/image', formDataFor(file, fields), options);
 }
 
+export function extractTextFromImage(file, fields, options) {
+  return apiPostForm('/convert/image-to-text', formDataFor(file, fields), options);
+}
+
+export function extractTextFromPdf(file, fields, options) {
+  return apiPostForm('/convert/pdf-to-text', formDataFor(file, fields), options);
+}
+
 export function compressImage(file, fields, options) {
   return apiPostForm('/convert/image-compress', formDataFor(file, fields), options);
 }

@@ -68,6 +68,7 @@ The response reports which conversions this deployment can actually perform, and
 - **Markdown → PDF** — a real typesetter rather than a print stylesheet: headings, lists, tables, blockquotes, task lists and syntax-highlighted code, in a light or dark page theme. Every block is measured before anything is drawn, so a code listing is never sliced in half by a page break and a heading never ends up alone at the foot of a page.
 - **Word → PDF** — headless LibreOffice, with Liberation fonts so Microsoft-font documents keep their pagination.
 - **PDF → Word** — two engines. The default rebuilds the document as real Word content (headings, paragraphs, bullet lists, tab stops, section rules), which is both editable and the only option that survives LaTeX-produced PDFs. `mode=layout` switches to `pdf2docx`, which reproduces page positioning and is better for forms and dense tables.
+- **Image → Text (OCR)** — pull the words out of a screenshot, photo or scan so they can be copied. PDFs are handled too: any real text layer is copied out exactly, and only pages that lack one are recognised from the image, which is both faster and more accurate than OCRing everything.
 - **Images** — JPG / PNG / WebP in any direction via Sharp, with EXIF rotation applied and transparency flattened for JPG.
 - **Resize for forms** — compress a photo to fit an upload limit ("must be under 100 KB"), optionally at exact pixel dimensions. Handles the *range* case too ("between 20 KB and 50 KB"), which is what exam boards and admission portals actually ask for.
 - Dark mode, drag-and-drop, upload progress, cancellable conversions.
@@ -96,6 +97,8 @@ Base URL: `https://<your-api>/api`
 | `POST` | `/convert/docx-to-pdf` | multipart: `file` | Needs LibreOffice |
 | `POST` | `/convert/pdf-to-docx` | multipart: `file`, `mode?` (`text` default \| `layout`) | Needs Python |
 | `POST` | `/convert/image` | multipart: `file`, `targetFormat` (`png`\|`jpg`\|`webp`), `quality?` | |
+| `POST` | `/convert/image-to-text` | multipart: `file`, `mode?` (`auto`\|`block`\|`line`), `language?` | Needs Tesseract |
+| `POST` | `/convert/pdf-to-text` | multipart: `file`, `mode?`, `forceOcr?` | Text layer, OCR fallback |
 | `POST` | `/convert/image-compress` | multipart: `file`, `targetKb`, `minKb?`, `width?`, `height?`, `fit?` (`cover`\|`inside`), `format?` | Compress to a size limit |
 | `GET` | `/files/:fileName?name=<download-name>` | — | Streams the result |
 

@@ -64,6 +64,15 @@ export function ResizeIcon(props) {
   );
 }
 
+export function TextScanIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3.5 8V5.5a2 2 0 0 1 2-2H8M16 3.5h2.5a2 2 0 0 1 2 2V8M20.5 16v2.5a2 2 0 0 1-2 2H16M8 20.5H5.5a2 2 0 0 1-2-2V16" />
+      <path d="M7.5 9.5h9M7.5 12.5h9M7.5 15.5h5" />
+    </svg>
+  );
+}
+
 export function UploadIcon(props) {
   return (
     <svg {...base} {...props}>
