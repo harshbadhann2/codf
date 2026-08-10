@@ -612,7 +612,65 @@ select.field {
   transform: translateY(-1px);
 }
 
-/* Segmented tab control with a sliding indicator. */
+/* ── Segmented tab control ──────────────────────────────────────────
+   The strip scrolls sideways when the tabs outgrow the screen. Three
+   declarations make that behave on a phone, and their absence is what made
+   the bar feel stuck:
+
+     overflow-y: hidden      `overflow-x: auto` alone computes overflow-y to
+                             `auto`, turning the bar into a vertical scroller
+                             that swallows the swipe meant for the page.
+     touch-action: pan-x     tells the browser this handles horizontal drags
+                             only, so vertical ones go straight to the page
+                             instead of waiting to see who wants them.
+     overscroll-behavior-x   stops a flick past the end from chaining to the
+                             page and triggering back-navigation. */
+
+/* The wrapper exists so the edge fades can sit still while the strip scrolls
+   underneath them. As pseudo-elements of the strip itself they would be flex
+   items — shifting every offsetLeft the thumb depends on — and they would
+   scroll away with the content. */
+.segmented-wrap {
+  position: relative;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .segmented-wrap {
+    width: auto;
+  }
+}
+
+.segmented-wrap::before,
+.segmented-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 2rem;
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-out);
+  pointer-events: none;
+}
+
+.segmented-wrap::before {
+  left: 0;
+  border-radius: 999px 0 0 999px;
+  background: linear-gradient(90deg, var(--bg) 20%, transparent);
+}
+
+.segmented-wrap::after {
+  right: 0;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(270deg, var(--bg) 20%, transparent);
+}
+
+.segmented-wrap.has-start::before,
+.segmented-wrap.has-end::after {
+  opacity: 1;
+}
+
 .segmented {
   position: relative;
   display: flex;
@@ -623,40 +681,29 @@ select.field {
   background: rgb(var(--surface) / 0.55);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-}
 
-/* On a narrow screen the strip scrolls; a soft fade at the trailing edge is
-   the only hint that there is more to the right. */
-.segmented-scroll {
-  position: relative;
-}
-
-.segmented-scroll::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 2.5rem;
-  border-radius: 0 999px 999px 0;
-  background: linear-gradient(90deg, transparent, var(--bg) 85%);
-  pointer-events: none;
-}
-
-@media (min-width: 640px) {
-  .segmented-scroll::after {
-    display: none;
-  }
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x pinch-zoom;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .segmented-thumb {
   position: absolute;
   top: 0.3rem;
   bottom: 0.3rem;
+  left: 0;
   border-radius: 999px;
   background: linear-gradient(115deg, var(--accent-2), var(--accent) 80%);
   box-shadow: var(--shadow-glow);
-  transition: transform 0.42s var(--ease-spring), width 0.42s var(--ease-spring);
+  /* A gentler landing than a true spring: enough overshoot to feel alive, not
+     enough to wobble. Transform and width only, so it stays on the compositor. */
+  transition:
+    transform 0.44s cubic-bezier(0.34, 1.18, 0.36, 1),
+    width 0.44s cubic-bezier(0.34, 1.18, 0.36, 1),
+    opacity 0.25s ease-out;
+  will-change: transform, width;
   pointer-events: none;
 }
 
@@ -664,15 +711,16 @@ select.field {
   position: relative;
   z-index: 1;
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 0.45rem;
   border-radius: 999px;
-  padding: 0.5rem 0.95rem;
+  padding: 0.55rem 0.95rem;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--ink-muted);
   white-space: nowrap;
-  transition: color 0.3s;
+  transition: color 0.35s var(--ease-out);
 }
 
 .segment:hover {
@@ -681,6 +729,13 @@ select.field {
 
 .segment[aria-selected='true'] {
   color: #fff;
+}
+
+/* Fingers need a bigger target than a mouse does. */
+@media (pointer: coarse) {
+  .segment {
+    padding: 0.65rem 1rem;
+  }
 }
 
 .chip {
