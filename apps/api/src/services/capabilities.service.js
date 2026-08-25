@@ -267,6 +267,13 @@ async function getCapabilities(options) {
       reason: ocr.reason,
       engine: ocr.available ? ocr.version : ''
     },
+    markdownToDocx: {
+      // python-docx only — no LibreOffice, which keeps the heaviest process on
+      // the instance out of the most common conversion on this tab.
+      available: pymupdf.available,
+      reason: pymupdf.reason,
+      engine: pymupdf.available ? 'python-docx' : ''
+    },
     toMarkdown: {
       available: pymupdf.available,
       reason: pymupdf.reason,

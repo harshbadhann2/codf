@@ -14,6 +14,8 @@ const {
   imageCompressController,
   markdownToPdfController,
   markdownFileToPdfController,
+  markdownToDocxController,
+  markdownFileToDocxController,
   imageToTextController,
   pdfToTextController,
   toMarkdownController
@@ -28,6 +30,21 @@ router.post('/code-to-pdf', express.json({ limit: '2mb' }), codeToPdfController)
 router.post('/markdown-to-pdf', express.json({ limit: '2mb' }), markdownToPdfController);
 
 router.post('/markdown-file-to-pdf', uploadSingle, validateUploadedFile('markdown'), markdownFileToPdfController);
+
+router.post(
+  '/markdown-to-docx',
+  express.json({ limit: '2mb' }),
+  requireCapability('markdownToDocx'),
+  markdownToDocxController
+);
+
+router.post(
+  '/markdown-file-to-docx',
+  uploadSingle,
+  validateUploadedFile('markdown'),
+  requireCapability('markdownToDocx'),
+  markdownFileToDocxController
+);
 
 router.post('/code-file-to-pdf', uploadSingle, validateUploadedFile('code'), codeFileToPdfController);
 

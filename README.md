@@ -65,6 +65,7 @@ The response reports which conversions this deployment can actually perform, and
 ## Features
 
 - **Code → PDF** — syntax highlighting for 190+ languages via highlight.js, rendered with JetBrains Mono, with line numbers, a title/subtitle block, and page footers. Accepts pasted code or an uploaded file, including Jupyter notebooks (`.ipynb`, flattened with markdown cells as comments).
+- **Markdown → Word** — a real .docx built with Word's own styles (Heading 1..6, List Bullet, List Number, Quote, Table Grid), so the recipient can restyle and keep editing it. Real hyperlinks, nested lists, and the arrows, symbols and emoji a PDF's standard fonts cannot encode.
 - **Markdown → PDF** — a real typesetter rather than a print stylesheet: headings, lists, tables, blockquotes, task lists and syntax-highlighted code, in a light or dark page theme. Every block is measured before anything is drawn, so a code listing is never sliced in half by a page break and a heading never ends up alone at the foot of a page.
 - **PDF / Word → Markdown** — the reverse trip. A `.docx` states its own structure, so headings, lists, tables, bold, italics and links come across almost exactly. A PDF states nothing, so structure is inferred from the layout — font size ranked against the document's own body size, weight, indentation — and hard-wrapped lines are rejoined into real paragraphs. The result view says which of the two happened, because one is exact and the other is a good guess.
 - **Word → PDF** — headless LibreOffice, with Liberation fonts so Microsoft-font documents keep their pagination.
@@ -95,6 +96,8 @@ Base URL: `https://<your-api>/api`
 | `POST` | `/convert/code-file-to-pdf` | multipart: `file` + the same optional fields | |
 | `POST` | `/convert/markdown-to-pdf` | JSON: `markdown`, `filename?`, `title?`, `subtitle?`, `theme?` (`light`\|`dark`), `pageSize?` (`a4`\|`letter`) | |
 | `POST` | `/convert/markdown-file-to-pdf` | multipart: `file` + the same optional fields | |
+| `POST` | `/convert/markdown-to-docx` | JSON: `markdown`, `filename?`, `title?`, `subtitle?`, `pageSize?` | Needs Python |
+| `POST` | `/convert/markdown-file-to-docx` | multipart: `file` + the same optional fields | Needs Python |
 | `POST` | `/convert/docx-to-pdf` | multipart: `file` | Needs LibreOffice |
 | `POST` | `/convert/pdf-to-docx` | multipart: `file`, `mode?` (`text` default \| `layout`) | Needs Python |
 | `POST` | `/convert/to-markdown` | multipart: `file` (`.pdf` or `.docx`) | Needs Python |

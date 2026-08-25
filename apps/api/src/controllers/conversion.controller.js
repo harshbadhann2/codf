@@ -17,6 +17,7 @@ const { convertDocxToPdf, convertPdfToDocx } = require('../services/document.ser
 const { convertImage } = require('../services/image.service');
 const { compressToTarget } = require('../services/imageCompress.service');
 const { renderMarkdownPdf } = require('../services/markdownPdf.service');
+const { renderMarkdownDocx } = require('../services/markdownDocx.service');
 const { extractTextFromImage, extractTextFromPdf } = require('../services/ocr.service');
 const { convertToMarkdown } = require('../services/docToMarkdown.service');
 
@@ -96,6 +97,43 @@ const markdownToPdfController = asyncHandler(async (req, res) => {
     themeUsed: result.themeUsed,
     droppedGlyphs: result.droppedGlyphs
   });
+});
+
+function finishDocx(req, res, result) {
+  finish(req, res, result, {
+    headings: result.headings,
+    tables: result.tables,
+    listItems: result.listItems,
+    paragraphs: result.paragraphs
+  });
+}
+
+const markdownToDocxController = asyncHandler(async (req, res) => {
+  const { markdown, filename, title, subtitle, pageSize } = req.body || {};
+
+  const result = await conversionQueue.run('markdown-to-docx', () =>
+    renderMarkdownDocx({ markdown, filename, title, subtitle, pageSize })
+  );
+
+  finishDocx(req, res, result);
+});
+
+const markdownFileToDocxController = asyncHandler(async (req, res) => {
+  const baseName = originalBaseName(req);
+
+  const result = await withUpload(req, 'markdown-file-to-docx', async (uploadedPath) => {
+    const markdown = await fsp.readFile(uploadedPath, 'utf8');
+
+    return renderMarkdownDocx({
+      markdown,
+      filename: req.body.filename || baseName,
+      title: req.body.title,
+      subtitle: req.body.subtitle,
+      pageSize: req.body.pageSize
+    });
+  });
+
+  finishDocx(req, res, result);
 });
 
 const markdownFileToPdfController = asyncHandler(async (req, res) => {
@@ -364,6 +402,8 @@ module.exports = {
   toMarkdownController,
   markdownToPdfController,
   markdownFileToPdfController,
+  markdownToDocxController,
+  markdownFileToDocxController,
   imageCompressController,
   codeToPdfController,
   codeFileToPdfController,

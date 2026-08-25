@@ -36,6 +36,8 @@ import {
   convertCodeToPdf,
   convertMarkdownToPdf,
   convertMarkdownFileToPdf,
+  convertMarkdownToDocx,
+  convertMarkdownFileToDocx,
   convertDocxToPdf,
   convertImage,
   convertPdfToDocx,
@@ -55,7 +57,7 @@ const TABS = [
 
 const TAB_BLURB = {
   code: 'Paste or upload source code and get a syntax-highlighted PDF, ready to submit.',
-  markdown: 'Typeset Markdown into a PDF, or pull clean Markdown back out of a PDF or Word file.',
+  markdown: 'Turn Markdown into a PDF or an editable Word file — or pull clean Markdown back out of one.',
   document: 'Convert Word to PDF, or turn a PDF back into an editable Word document.',
   image: 'Switch between JPG, PNG and WebP without losing quality.',
   compress: 'Hit the exact size an exam or admission form demands.',
@@ -150,21 +152,29 @@ export default function App() {
       return;
     }
 
+    // Theme is a PDF-only concept — a Word document carries no page colour of
+    // its own — so it is left out of the .docx request rather than ignored
+    // silently by the server.
+    const wantsWord = form.output === 'docx';
+
     const fields = {
       filename: form.filename,
       title: form.title,
       subtitle: form.subtitle,
-      theme: form.theme,
-      pageSize: form.pageSize
+      pageSize: form.pageSize,
+      ...(wantsWord ? {} : { theme: form.theme })
     };
 
     if (form.file) {
       if (!guardFile(form.file, form.extensions)) return;
-      run('document', () => convertMarkdownFileToPdf(form.file, fields, { onProgress: setProgress }));
+
+      const send = wantsWord ? convertMarkdownFileToDocx : convertMarkdownFileToPdf;
+      run('document', () => send(form.file, fields, { onProgress: setProgress }));
       return;
     }
 
-    run('document', () => convertMarkdownToPdf({ ...fields, markdown: form.markdown }));
+    const send = wantsWord ? convertMarkdownToDocx : convertMarkdownToPdf;
+    run('document', () => send({ ...fields, markdown: form.markdown }));
   }
 
   function handleDocumentSubmit({ mode, file, extensions, engine }) {

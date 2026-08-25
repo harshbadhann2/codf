@@ -233,14 +233,19 @@ def docx_list_info(paragraph, formats):
             fmt = formats.get((num_id, str(level))) or formats.get((num_id, "0"))
             return level, fmt not in (None, "bullet", "none")
 
-    # Documents built from styles rather than the numbering toolbar.
+    # Documents built from styles rather than the numbering toolbar. Word's
+    # nested variants are named "List Bullet 2", "List Bullet 3" and so on, so
+    # the trailing digit is the depth — without reading it every level of a
+    # nested list collapses onto the first.
     name = (paragraph.style.name or "").lower() if paragraph.style else ""
+    depth = re.search(r"\s(\d)$", name)
+    level = int(depth.group(1)) - 1 if depth else 0
 
     if "list number" in name:
-        return 0, True
+        return level, True
 
-    if "list bullet" in name or name == "list paragraph":
-        return 0, False
+    if "list bullet" in name or name.startswith("list paragraph"):
+        return level, False
 
     return None
 
@@ -322,6 +327,26 @@ def docx_inline(paragraph):
     return "".join(pieces).strip()
 
 
+def docx_is_code(paragraph):
+    """
+    True when every run in the paragraph is monospaced.
+
+    Word has no code-block concept: a listing pasted into a document is just
+    consecutive paragraphs in a monospaced face. Read one at a time they come
+    back as separate lines of inline code, which loses the indentation that is
+    the whole point of showing code.
+    """
+    runs = [run for run in paragraph.runs if run.text.strip()]
+
+    if not runs:
+        return False
+
+    return all(
+        any(key in (run.font.name or "").lower() for key in ("mono", "courier", "consol"))
+        for run in runs
+    )
+
+
 def docx_cell_text(cell):
     lines = [docx_inline(paragraph) for paragraph in cell.paragraphs]
     joined = "<br>".join(line for line in lines if line.strip())
@@ -389,6 +414,16 @@ def docx_to_markdown(path):
             continue
 
         paragraph = Paragraph(child, document)
+
+        if docx_is_code(paragraph):
+            # Extend the open listing rather than starting a new one, so a
+            # multi-line block survives as a multi-line block.
+            if blocks and blocks[-1][0] == "code":
+                blocks[-1] = ("code", blocks[-1][1] + "\n" + paragraph.text.rstrip())
+            else:
+                blocks.append(("code", paragraph.text.rstrip()))
+            continue
+
         text = docx_inline(paragraph)
 
         if not text.strip():
@@ -443,6 +478,11 @@ def docx_to_markdown(path):
     # to shift down one to keep the hierarchy that Word actually described.
     # Emitting both Title and Heading 1 as `#` would flatten two distinct
     # levels into one and lose the document's outline.
+    blocks = [
+        ("code", "```\n" + text.strip("\n") + "\n```") if kind == "code" and not text.startswith("```") else (kind, text)
+        for kind, text in blocks
+    ]
+
     demote = any(is_title for *_, is_title in headings)
 
     for index, level, heading_text, is_title in headings:

@@ -101,6 +101,11 @@ export const DOCUMENT_EXTENSIONS = ['.pdf', '.docx'];
 
 export const MARKDOWN_EXTENSIONS = ['.md', '.markdown', '.mdown', '.txt'];
 
+export const MARKDOWN_OUTPUTS = [
+  { value: 'pdf', label: 'PDF — fixed layout, ready to hand in' },
+  { value: 'docx', label: 'Word (.docx) — editable, real Word styles' }
+];
+
 export const PDF_THEMES = [
   { value: 'light', label: 'Light — white page' },
   { value: 'dark', label: 'Dark — dark page' }

@@ -12,6 +12,14 @@ export function convertMarkdownFileToPdf(file, fields, options) {
   return apiPostForm('/convert/markdown-file-to-pdf', formDataFor(file, fields), options);
 }
 
+export function convertMarkdownToDocx(payload, options) {
+  return apiPostJson('/convert/markdown-to-docx', payload, options);
+}
+
+export function convertMarkdownFileToDocx(file, fields, options) {
+  return apiPostForm('/convert/markdown-file-to-docx', formDataFor(file, fields), options);
+}
+
 export function convertCodeToPdf(payload, options) {
   return apiPostJson('/convert/code-to-pdf', payload, options);
 }

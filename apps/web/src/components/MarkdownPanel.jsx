@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Dropzone from './Dropzone';
 import ToMarkdownPanel from './ToMarkdownPanel';
 import { ModeToggle, SelectField, SubmitButton, TextField } from './Field';
-import { MARKDOWN_EXTENSIONS, PDF_PAGE_SIZES, PDF_THEMES } from '../lib/constants';
+import { MARKDOWN_EXTENSIONS, MARKDOWN_OUTPUTS, PDF_PAGE_SIZES, PDF_THEMES } from '../lib/constants';
 import { stripExtension } from '../lib/files';
 
 /**
@@ -13,7 +13,7 @@ import { stripExtension } from '../lib/files';
  * for the same place in the strip and read as unrelated features.
  */
 const DIRECTIONS = [
-  { id: 'to-pdf', label: 'Markdown → PDF' },
+  { id: 'to-pdf', label: 'Markdown → PDF/Word' },
   { id: 'from-doc', label: 'PDF/Word → Markdown', capability: 'toMarkdown' }
 ];
 
@@ -40,6 +40,7 @@ export default function MarkdownPanel({ onSubmit, isBusy, maxFileSizeMb, maxPdfP
     filename: 'document',
     title: '',
     subtitle: '',
+    output: 'pdf',
     theme: 'light',
     pageSize: 'a4',
     markdown: '',
@@ -48,6 +49,7 @@ export default function MarkdownPanel({ onSubmit, isBusy, maxFileSizeMb, maxPdfP
 
   const update = (patch) => setForm((current) => ({ ...current, ...patch }));
 
+  const wantsWord = form.output === 'docx';
   const usingFile = Boolean(form.file);
   const canSubmit = (usingFile || form.markdown.trim().length > 0) && !isBusy;
 
@@ -100,14 +102,14 @@ export default function MarkdownPanel({ onSubmit, isBusy, maxFileSizeMb, maxPdfP
           maxLength={60}
         />
         <SelectField
-          label="PDF theme"
-          value={form.theme}
-          onChange={(theme) => update({ theme })}
-          options={PDF_THEMES}
+          label="Convert to"
+          value={form.output}
+          onChange={(output) => update({ output })}
+          options={MARKDOWN_OUTPUTS}
           hint={
-            form.theme === 'dark'
-              ? 'Dark page with syntax colours tuned for it — good on screen, heavy on a printer.'
-              : 'Standard white page. Best for printing and for handing in.'
+            wantsWord
+              ? 'A real Word document — headings, lists and tables use Word’s own styles, so you can keep editing it.'
+              : 'A typeset PDF with syntax-highlighted code that never splits across a page break.'
           }
         />
       </div>
@@ -127,6 +129,23 @@ export default function MarkdownPanel({ onSubmit, isBusy, maxFileSizeMb, maxPdfP
           options={PDF_PAGE_SIZES}
         />
       </div>
+
+      {/* Theme is a property of a printed page. A Word document has no page
+          colour of its own, so offering the choice there would be a control
+          that quietly does nothing. */}
+      {!wantsWord && (
+        <SelectField
+          label="PDF theme"
+          value={form.theme}
+          onChange={(theme) => update({ theme })}
+          options={PDF_THEMES}
+          hint={
+            form.theme === 'dark'
+              ? 'Dark page with syntax colours tuned for it — good on screen, heavy on a printer.'
+              : 'Standard white page. Best for printing and for handing in.'
+          }
+        />
+      )}
 
       <TextField
         label="Subtitle (optional)"
@@ -187,13 +206,13 @@ export default function MarkdownPanel({ onSubmit, isBusy, maxFileSizeMb, maxPdfP
       </div>
 
       <SubmitButton disabled={!canSubmit} busy={isBusy}>
-        {isBusy ? 'Building PDF…' : 'Convert to PDF'}
+        {isBusy ? (wantsWord ? 'Building Word file…' : 'Building PDF…') : wantsWord ? 'Convert to Word' : 'Convert to PDF'}
       </SubmitButton>
 
       <p className="text-xs leading-relaxed text-[var(--ink-faint)]">
-        Headings, lists, tables, blockquotes and task lists are all rendered. Code blocks keep their syntax colours
-        and are never cut in half by a page break — if one will not fit, the whole block moves to the next page with
-        its heading.
+        {wantsWord
+          ? 'Headings, lists, tables, quotes and links become real Word content, so the file opens ready to edit. Arrows, symbols and emoji survive here that a PDF cannot show.'
+          : 'Headings, lists, tables, blockquotes and task lists are all rendered. Code blocks keep their syntax colours and are never cut in half by a page break — if one will not fit, the whole block moves to the next page with its heading.'}
       </p>
     </form>
   );
