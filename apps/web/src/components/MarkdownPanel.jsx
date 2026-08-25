@@ -1,8 +1,21 @@
 import { useState } from 'react';
 import Dropzone from './Dropzone';
-import { SelectField, SubmitButton, TextField } from './Field';
+import ToMarkdownPanel from './ToMarkdownPanel';
+import { ModeToggle, SelectField, SubmitButton, TextField } from './Field';
 import { MARKDOWN_EXTENSIONS, PDF_PAGE_SIZES, PDF_THEMES } from '../lib/constants';
 import { stripExtension } from '../lib/files';
+
+/**
+ * Markdown ↔ PDF.
+ *
+ * The two directions share a tab because they are the same job read backwards,
+ * the way Word ↔ PDF already works here. Split across two tabs they competed
+ * for the same place in the strip and read as unrelated features.
+ */
+const DIRECTIONS = [
+  { id: 'to-pdf', label: 'Markdown → PDF' },
+  { id: 'from-doc', label: 'PDF/Word → Markdown', capability: 'toMarkdown' }
+];
 
 const SAMPLE = `# Project Report
 
@@ -21,7 +34,8 @@ def total(values):
 > Code blocks are never split across pages.
 `;
 
-export default function MarkdownPanel({ onSubmit, isBusy, maxFileSizeMb }) {
+export default function MarkdownPanel({ onSubmit, isBusy, maxFileSizeMb, maxPdfPages, can, reasonFor }) {
+  const [direction, setDirection] = useState('to-pdf');
   const [form, setForm] = useState({
     filename: 'document',
     title: '',
@@ -40,11 +54,43 @@ export default function MarkdownPanel({ onSubmit, isBusy, maxFileSizeMb }) {
   function handleSubmit(event) {
     event.preventDefault();
     if (!canSubmit) return;
-    onSubmit({ ...form, extensions: MARKDOWN_EXTENSIONS });
+    onSubmit({ ...form, extensions: MARKDOWN_EXTENSIONS, direction: 'to-pdf' });
+  }
+
+  const toggle = (
+    <ModeToggle
+      label="Conversion direction"
+      value={direction}
+      onChange={setDirection}
+      options={DIRECTIONS.map((entry) => ({
+        value: entry.id,
+        label: entry.label,
+        disabled: entry.capability ? !can(entry.capability) : false,
+        title: entry.capability && !can(entry.capability) ? reasonFor(entry.capability) : undefined
+      }))}
+    />
+  );
+
+  if (direction === 'from-doc') {
+    return (
+      <div className="space-y-4">
+        {toggle}
+        <ToMarkdownPanel
+          onSubmit={(payload) => onSubmit({ ...payload, direction: 'from-doc' })}
+          isBusy={isBusy}
+          maxFileSizeMb={maxFileSizeMb}
+          maxPdfPages={maxPdfPages}
+          can={can}
+          reasonFor={reasonFor}
+        />
+      </div>
+    );
   }
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
+      {toggle}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField
           label="Output filename"

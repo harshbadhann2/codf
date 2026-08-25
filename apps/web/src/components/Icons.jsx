@@ -45,18 +45,6 @@ export function DocIcon(props) {
   );
 }
 
-/* A document page whose body has become Markdown. The mirror of MarkdownIcon,
-   which is the Markdown badge itself rather than a conversion into it. */
-export function MarkdownOutIcon(props) {
-  return (
-    <svg {...base} {...props}>
-      <path d="M13.5 3v5h5" />
-      <path d="M18.5 9.5V19a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6z" />
-      <path d="M8.5 16.5v-5l2 2.6 2-2.6v5" />
-    </svg>
-  );
-}
-
 export function ImageIcon(props) {
   return (
     <svg {...base} {...props}>

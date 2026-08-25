@@ -147,7 +147,7 @@ function PageCard({ format = 'PDF', delay = 0.7, gutter = true }) {
 }
 
 /* ── Markdown source ─────────────────────────────────────────── */
-function MarkdownCard({ delay = 0.35, filename = 'README.md' }) {
+function MarkdownCard({ delay = 0.35 }) {
   const lines = [
     { w: 46, hash: true },
     { w: 0 },
@@ -164,7 +164,7 @@ function MarkdownCard({ delay = 0.35, filename = 'README.md' }) {
         <span className="h-2 w-2 rounded-full bg-red-400/70" />
         <span className="h-2 w-2 rounded-full bg-amber-400/70" />
         <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
-        <span className="ml-1 font-mono text-[9px] text-[var(--ink-faint)]">{filename}</span>
+        <span className="ml-1 font-mono text-[9px] text-[var(--ink-faint)]">README.md</span>
       </div>
 
       <div className="space-y-[7px]">
@@ -319,9 +319,10 @@ const VARIANTS = {
   markdown: {
     left: <MarkdownCard />,
     right: <TypesetCard />,
-    from: 'Your Markdown',
-    to: 'Typeset PDF, light or dark',
-    toShort: 'Typeset PDF'
+    from: 'Markdown',
+    to: 'Typeset PDF — and back again',
+    toShort: 'PDF, and back',
+    twoWay: true
   },
   document: {
     left: <PageCard format="DOCX" delay={0.35} gutter={false} />,
@@ -344,13 +345,6 @@ const VARIANTS = {
     from: 'Picture of text',
     to: 'Text you can copy',
     toShort: 'Copyable text'
-  },
-  tomarkdown: {
-    left: <PageCard format="PDF" delay={0.35} gutter={false} />,
-    right: <MarkdownCard delay={0.65} filename="notes.md" />,
-    from: 'PDF or Word',
-    to: 'Clean, editable Markdown',
-    toShort: 'Markdown'
   },
   compress: {
     left: <PhotoCard format="JPG" weight="2.4 MB" />,
