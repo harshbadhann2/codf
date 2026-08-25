@@ -53,6 +53,10 @@ export function extractTextFromPdf(file, fields, options) {
   return apiPostForm('/convert/pdf-to-text', formDataFor(file, fields), options);
 }
 
+export function convertToMarkdown(file, options) {
+  return apiPostForm('/convert/to-markdown', formDataFor(file), options);
+}
+
 export function compressImage(file, fields, options) {
   return apiPostForm('/convert/image-compress', formDataFor(file, fields), options);
 }

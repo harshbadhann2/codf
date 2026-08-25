@@ -96,6 +96,9 @@ export const LANGUAGE_OPTIONS = [
   { value: 'plaintext', label: 'Plain text' }
 ];
 
+/** Accepted by the document → Markdown converter. */
+export const DOCUMENT_EXTENSIONS = ['.pdf', '.docx'];
+
 export const MARKDOWN_EXTENSIONS = ['.md', '.markdown', '.mdown', '.txt'];
 
 export const PDF_THEMES = [

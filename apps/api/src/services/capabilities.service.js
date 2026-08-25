@@ -70,6 +70,7 @@ function isSpawnable(candidate) {
 const state = {
   libreOffice: { checkedAt: 0, available: false, binary: '', version: '', reason: 'not probed yet' },
   python: { checkedAt: 0, available: false, binary: '', version: '', reason: 'not probed yet' },
+  pymupdf: { checkedAt: 0, available: false, binary: '', version: '', reason: 'not probed yet' },
   ocr: { checkedAt: 0, available: false, binary: '', version: '', reason: 'not probed yet' }
 };
 
@@ -138,6 +139,43 @@ async function probePython() {
   };
 }
 
+/**
+ * Probes the PyMuPDF + python-docx pair on its own.
+ *
+ * Deliberately separate from `probePython`, which imports pdf2docx and so
+ * drags in OpenCV and NumPy. Markdown conversion needs none of that, and
+ * folding the two together would mean a broken OpenCV install — a genuinely
+ * common failure — silently disabling a feature that would have worked fine.
+ */
+async function probePyMuPdf() {
+  const script = path.join(env.scriptDir, 'to_markdown.py');
+
+  if (!fs.existsSync(script)) {
+    return { available: false, binary: '', version: '', reason: 'to_markdown.py is missing from the image.' };
+  }
+
+  for (const candidate of pythonCandidates()) {
+    if (!isSpawnable(candidate)) continue;
+
+    try {
+      const { stdout } = await runCommand(candidate, [script, '--selfcheck'], {
+        timeoutMs: PROBE_TIMEOUT_MS
+      });
+
+      return { available: true, binary: candidate, version: stdout.trim(), reason: '' };
+    } catch (error) {
+      logger.debug('PyMuPDF candidate rejected', { candidate, error: error.message });
+    }
+  }
+
+  return {
+    available: false,
+    binary: '',
+    version: '',
+    reason: 'Python with PyMuPDF and python-docx was not found. Install them and set PYTHON_PATH.'
+  };
+}
+
 async function probeOcr() {
   for (const candidate of tesseractCandidates()) {
     if (!isSpawnable(candidate)) continue;
@@ -175,7 +213,7 @@ async function probeOcr() {
   };
 }
 
-const probes = { libreOffice: probeLibreOffice, python: probePython, ocr: probeOcr };
+const probes = { libreOffice: probeLibreOffice, python: probePython, pymupdf: probePyMuPdf, ocr: probeOcr };
 
 async function getCapability(name, { force = false } = {}) {
   const current = state[name];
@@ -202,9 +240,10 @@ async function getCapability(name, { force = false } = {}) {
 
 /** Feature-level view used by /api/health and the capability guard middleware. */
 async function getCapabilities(options) {
-  const [libreOffice, python, ocr] = await Promise.all([
+  const [libreOffice, python, pymupdf, ocr] = await Promise.all([
     getCapability('libreOffice', options),
     getCapability('python', options),
+    getCapability('pymupdf', options),
     getCapability('ocr', options)
   ]);
 
@@ -227,6 +266,11 @@ async function getCapabilities(options) {
       available: ocr.available,
       reason: ocr.reason,
       engine: ocr.available ? ocr.version : ''
+    },
+    toMarkdown: {
+      available: pymupdf.available,
+      reason: pymupdf.reason,
+      engine: pymupdf.available ? 'PyMuPDF + python-docx' : ''
     },
     pdfToText: {
       // A normal PDF needs only PyMuPDF; OCR is the fallback for scans.

@@ -18,6 +18,7 @@ const { convertImage } = require('../services/image.service');
 const { compressToTarget } = require('../services/imageCompress.service');
 const { renderMarkdownPdf } = require('../services/markdownPdf.service');
 const { extractTextFromImage, extractTextFromPdf } = require('../services/ocr.service');
+const { convertToMarkdown } = require('../services/docToMarkdown.service');
 
 /**
  * Builds the response payload for a finished conversion.
@@ -292,6 +293,31 @@ const pdfToTextController = asyncHandler(async (req, res) => {
   finishExtraction(req, res, result);
 });
 
+const toMarkdownController = asyncHandler(async (req, res) => {
+  const baseName = originalBaseName(req);
+  const sourceFormat = path.extname(req.file.originalname || '').toLowerCase() === '.docx' ? 'docx' : 'pdf';
+
+  const result = await withUpload(req, 'to-markdown', (uploadedPath) =>
+    convertToMarkdown({ inputPath: uploadedPath, originalBaseName: baseName, sourceFormat })
+  );
+
+  finish(req, res, result, {
+    // `format` is what the result view keys on: this is Markdown to be read
+    // and copied, not the plain text the OCR endpoints return.
+    format: 'markdown',
+    text: result.text,
+    characters: result.characters,
+    words: result.words,
+    pages: result.pages,
+    headings: result.headings,
+    tables: result.tables,
+    listItems: result.listItems,
+    codeBlocks: result.codeBlocks,
+    truncated: result.truncated,
+    sourceFormat: result.sourceFormat
+  });
+});
+
 const downloadFileController = asyncHandler(async (req, res) => {
   const outputPath = resolveOutputFilePath(req.params.fileName);
   const stats = await fsp.stat(outputPath).catch(() => null);
@@ -335,6 +361,7 @@ const downloadFileController = asyncHandler(async (req, res) => {
 module.exports = {
   imageToTextController,
   pdfToTextController,
+  toMarkdownController,
   markdownToPdfController,
   markdownFileToPdfController,
   imageCompressController,

@@ -66,6 +66,7 @@ The response reports which conversions this deployment can actually perform, and
 
 - **Code → PDF** — syntax highlighting for 190+ languages via highlight.js, rendered with JetBrains Mono, with line numbers, a title/subtitle block, and page footers. Accepts pasted code or an uploaded file, including Jupyter notebooks (`.ipynb`, flattened with markdown cells as comments).
 - **Markdown → PDF** — a real typesetter rather than a print stylesheet: headings, lists, tables, blockquotes, task lists and syntax-highlighted code, in a light or dark page theme. Every block is measured before anything is drawn, so a code listing is never sliced in half by a page break and a heading never ends up alone at the foot of a page.
+- **PDF / Word → Markdown** — the reverse trip. A `.docx` states its own structure, so headings, lists, tables, bold, italics and links come across almost exactly. A PDF states nothing, so structure is inferred from the layout — font size ranked against the document's own body size, weight, indentation — and hard-wrapped lines are rejoined into real paragraphs. The result view says which of the two happened, because one is exact and the other is a good guess.
 - **Word → PDF** — headless LibreOffice, with Liberation fonts so Microsoft-font documents keep their pagination.
 - **PDF → Word** — two engines. The default rebuilds the document as real Word content (headings, paragraphs, bullet lists, tab stops, section rules), which is both editable and the only option that survives LaTeX-produced PDFs. `mode=layout` switches to `pdf2docx`, which reproduces page positioning and is better for forms and dense tables.
 - **Image → Text (OCR)** — pull the words out of a screenshot, photo or scan so they can be copied. PDFs are handled too: any real text layer is copied out exactly, and only pages that lack one are recognised from the image, which is both faster and more accurate than OCRing everything.
@@ -96,6 +97,7 @@ Base URL: `https://<your-api>/api`
 | `POST` | `/convert/markdown-file-to-pdf` | multipart: `file` + the same optional fields | |
 | `POST` | `/convert/docx-to-pdf` | multipart: `file` | Needs LibreOffice |
 | `POST` | `/convert/pdf-to-docx` | multipart: `file`, `mode?` (`text` default \| `layout`) | Needs Python |
+| `POST` | `/convert/to-markdown` | multipart: `file` (`.pdf` or `.docx`) | Needs Python |
 | `POST` | `/convert/image` | multipart: `file`, `targetFormat` (`png`\|`jpg`\|`webp`), `quality?` | |
 | `POST` | `/convert/image-to-text` | multipart: `file`, `mode?` (`auto`\|`block`\|`line`), `language?` | Needs Tesseract |
 | `POST` | `/convert/pdf-to-text` | multipart: `file`, `mode?`, `forceOcr?` | Text layer, OCR fallback |

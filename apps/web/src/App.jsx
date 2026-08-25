@@ -5,6 +5,7 @@ import DocumentPanel from './components/DocumentPanel';
 import ImagePanel from './components/ImagePanel';
 import CompressPanel from './components/CompressPanel';
 import ExtractPanel from './components/ExtractPanel';
+import ToMarkdownPanel from './components/ToMarkdownPanel';
 import TextResult from './components/TextResult';
 import ResultCard from './components/ResultCard';
 import ServerStatusBanner from './components/ServerStatusBanner';
@@ -23,7 +24,8 @@ import {
   ResizeIcon,
   ShieldIcon,
   SunIcon,
-  TextScanIcon
+  TextScanIcon,
+  MarkdownOutIcon
 } from './components/Icons';
 import { useServerStatus } from './hooks/useServerStatus';
 import { useTheme } from './hooks/useTheme';
@@ -40,7 +42,8 @@ import {
   convertImage,
   convertPdfToDocx,
   extractTextFromImage,
-  extractTextFromPdf
+  extractTextFromPdf,
+  convertToMarkdown
 } from './api/conversions';
 
 const TABS = [
@@ -49,7 +52,8 @@ const TABS = [
   { id: 'document', label: 'Word ↔ PDF', icon: DocIcon },
   { id: 'image', label: 'Image formats', icon: ImageIcon },
   { id: 'compress', label: 'Resize for forms', icon: ResizeIcon },
-  { id: 'extract', label: 'Image → Text', icon: TextScanIcon }
+  { id: 'extract', label: 'Image → Text', icon: TextScanIcon },
+  { id: 'tomarkdown', label: 'PDF/Word → MD', icon: MarkdownOutIcon }
 ];
 
 const TAB_BLURB = {
@@ -58,7 +62,8 @@ const TAB_BLURB = {
   document: 'Convert Word to PDF, or turn a PDF back into an editable Word document.',
   image: 'Switch between JPG, PNG and WebP without losing quality.',
   compress: 'Hit the exact size an exam or admission form demands.',
-  extract: 'Pull the words out of a screenshot, photo or scan so you can copy and paste them.'
+  extract: 'Pull the words out of a screenshot, photo or scan so you can copy and paste them.',
+  tomarkdown: 'Turn a PDF or Word document into clean Markdown — headings, lists and tables intact.'
 };
 
 const FALLBACK_MAX_FILE_SIZE_MB = Number(import.meta.env.VITE_MAX_FILE_SIZE_MB || 10);
@@ -179,6 +184,11 @@ export default function App() {
     run('compress', () => compressImage(file, fields, { onProgress: setProgress }));
   }
 
+  function handleToMarkdownSubmit({ file, extensions }) {
+    if (!guardFile(file, extensions)) return;
+    run('text', () => convertToMarkdown(file, { onProgress: setProgress }));
+  }
+
   function handleExtractSubmit({ source, file, extensions, fields }) {
     if (!guardFile(file, extensions)) return;
 
@@ -238,8 +248,13 @@ export default function App() {
           <ServerStatusBanner status={status} attempt={attempt} error={serverError} onRetry={retry} />
         </div>
 
-        {/* ── Tabs ─────────────────────────────────────────────── */}
-        <div className="reveal mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
+        {/* ── Tabs ─────────────────────────────────────────────────
+            The blurb sits under the strip rather than beside it. Sharing a row
+            worked at six tabs; at seven there is no longer width for both, and
+            the description collapsed into a column one word wide. Below it, the
+            strip gets the full container and the text stays readable at every
+            size. */}
+        <div className="reveal mt-8 sm:mt-10">
           <TabBar
             tabs={TABS}
             active={activeTab}
@@ -248,12 +263,9 @@ export default function App() {
               resetFeedback();
             }}
           />
-          <p className="hidden max-w-xs text-right text-xs leading-relaxed text-[var(--ink-faint)] lg:block">
-            {TAB_BLURB[activeTab]}
-          </p>
         </div>
 
-        <p className="mt-3 text-sm text-[var(--ink-muted)] lg:hidden">{TAB_BLURB[activeTab]}</p>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--ink-muted)]">{TAB_BLURB[activeTab]}</p>
 
         {/* ── Work area ────────────────────────────────────────── */}
         <main className="mt-5 grid items-start gap-5 lg:grid-cols-[1.55fr_1fr]">
@@ -289,6 +301,17 @@ export default function App() {
 
             {activeTab === 'compress' && (
               <CompressPanel onSubmit={handleCompressSubmit} isBusy={isBusy} maxFileSizeMb={maxFileSizeMb} />
+            )}
+
+            {activeTab === 'tomarkdown' && (
+              <ToMarkdownPanel
+                onSubmit={handleToMarkdownSubmit}
+                isBusy={isBusy}
+                maxFileSizeMb={maxFileSizeMb}
+                maxPdfPages={maxPdfPages}
+                can={can}
+                reasonFor={reasonFor}
+              />
             )}
 
             {activeTab === 'extract' && (

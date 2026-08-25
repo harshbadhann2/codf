@@ -17,6 +17,13 @@ const profiles = {
     extensions: new Set(['.pdf']),
     signatures: new Set(['pdf'])
   },
+  // Either document type. The signature check still pins each extension to
+  // its own magic number below, so this is not a loophole for one of them.
+  document: {
+    label: 'PDF or Word document',
+    extensions: new Set(['.pdf', '.docx']),
+    signatures: new Set(['pdf', 'zip'])
+  },
   image: {
     label: 'image',
     extensions: new Set(['.jpg', '.jpeg', '.png', '.webp']),
