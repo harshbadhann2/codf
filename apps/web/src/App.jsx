@@ -237,8 +237,9 @@ export default function App() {
             <Logo />
 
             <p className="mt-5 max-w-lg text-[0.95rem] leading-relaxed text-[var(--ink-muted)] sm:text-base">
-              Turn your code into a clean, submission-ready PDF — plus Word ↔ PDF and the image resizing every
-              application form insists on. No account, nothing kept.
+              Turn your code into a clean, submission-ready PDF. Convert Word and Markdown to PDF and back,
+              swap image formats, resize a photo to the exact size an application form insists on, or lift
+              the text out of a screenshot. No account, nothing kept.
             </p>
 
             <div className="mt-5">
