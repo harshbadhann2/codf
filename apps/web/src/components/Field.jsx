@@ -39,7 +39,7 @@ export function NumberField({ label, hint, value, onChange, error, optional, ...
         className="field focus-ring"
         {...props}
       />
-      {error && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-1.5 text-xs text-[var(--danger)]">{error}</p>}
       {!error && hint && <p className="mt-1.5 text-xs text-[var(--ink-faint)]">{hint}</p>}
     </div>
   );
@@ -97,7 +97,7 @@ export function ModeToggle({ options, value, onChange, label }) {
             title={option.title}
             className={`focus-ring rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
               selected
-                ? 'border-transparent bg-gradient-to-br from-[var(--accent-2)] to-[var(--accent)] text-white shadow-[var(--shadow-glow)]'
+                ? 'border-transparent bg-gradient-to-br from-[var(--cta-a)] to-[var(--cta-b)] text-[var(--cta-ink)] shadow-[var(--shadow-glow)]'
                 : 'border-[var(--line)] bg-[rgb(var(--surface)/0.5)] text-[var(--ink-muted)] hover:border-[var(--line-strong)] hover:text-[var(--ink)]'
             } ${option.disabled ? 'cursor-not-allowed opacity-45' : ''}`}
           >

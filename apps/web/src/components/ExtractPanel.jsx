@@ -68,9 +68,9 @@ export default function ExtractPanel({ onSubmit, isBusy, maxFileSizeMb, can, rea
       />
 
       {!isAvailable && (
-        <div className="animate-pop rounded-[var(--radius-md)] border border-amber-500/35 bg-amber-500/10 p-3 text-xs">
-          <p className="font-semibold text-amber-800 dark:text-amber-200">Not available right now</p>
-          <p className="mt-1 leading-relaxed text-amber-800/80 dark:text-amber-200/70">
+        <div className="note note-warn animate-pop p-3 text-xs">
+          <p className="font-semibold">Not available right now</p>
+          <p className="note-detail mt-1 leading-relaxed">
             {reasonFor(active.capability)}
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function ExtractPanel({ onSubmit, isBusy, maxFileSizeMb, can, rea
           <img
             src={previewUrl}
             alt="Preview of the image you selected"
-            className="max-h-48 w-full rounded-[var(--radius-md)] border border-[var(--line)] bg-white object-contain dark:bg-slate-900"
+            className="max-h-48 w-full rounded-[var(--radius-md)] border border-[var(--line)] bg-white object-contain dark:bg-[#101319]"
           />
           <figcaption className="mt-1 text-xs text-[var(--ink-faint)]">Text will be read from this</figcaption>
         </figure>

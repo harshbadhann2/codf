@@ -3,15 +3,15 @@ import { flushSync } from 'react-dom';
 
 const THEME_KEY = 'codf-theme';
 
+/**
+ * The boot script in index.html already resolved this and applied the class
+ * before the first paint. Read it back rather than working it out a second
+ * time — duplicating the logic invites the two answers to drift apart, and
+ * React would then correct the DOM one frame in, which is the flash the boot
+ * script exists to remove.
+ */
 function getInitialTheme() {
-  try {
-    const stored = localStorage.getItem(THEME_KEY);
-    if (stored === 'dark' || stored === 'light') return stored;
-  } catch {
-    // Private browsing can make localStorage throw on access.
-  }
-
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
 function prefersReducedMotion() {
@@ -23,6 +23,8 @@ export function useTheme() {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
+    // Keeps form controls, scrollbars and caret colours on the right side.
+    document.documentElement.style.colorScheme = theme;
 
     try {
       localStorage.setItem(THEME_KEY, theme);

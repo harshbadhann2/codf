@@ -29,13 +29,13 @@ export default class ErrorBoundary extends Component {
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
           Reloading usually fixes it. If it keeps happening, the details are in your browser console.
         </p>
-        <pre className="mt-4 overflow-x-auto rounded-xl border border-[var(--line)] bg-white/70 p-3 text-left font-mono text-xs dark:bg-slate-900/50">
+        <pre className="mt-4 overflow-x-auto rounded-xl border border-[var(--line)] bg-white/70 p-3 text-left font-mono text-xs dark:bg-[#101319]/60">
           {String(error.message || error)}
         </pre>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="focus-ring mt-4 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-teal-800"
+          className="btn-primary focus-ring mt-4"
         >
           Reload
         </button>

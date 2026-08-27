@@ -50,7 +50,7 @@ export default function ImagePanel({ onSubmit, isBusy, maxFileSizeMb }) {
           <img
             src={previewUrl}
             alt="Preview of the image you selected"
-            className="max-h-56 w-full rounded-xl border border-[var(--line)] bg-white object-contain dark:bg-slate-900"
+            className="max-h-56 w-full rounded-xl border border-[var(--line)] bg-white object-contain dark:bg-[#101319]"
           />
           <figcaption className="mt-1 text-xs text-[var(--ink-muted)]">Before conversion</figcaption>
         </figure>

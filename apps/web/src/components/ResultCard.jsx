@@ -99,7 +99,7 @@ export default function ResultCard({ result, onReset }) {
         <img
           src={`${result.downloadUrl}&inline=1`}
           alt={`Converted result: ${result.originalName}`}
-          className="max-h-48 w-full rounded-[var(--radius-md)] border border-[var(--line)] bg-white object-contain p-1 dark:bg-slate-900"
+          className="max-h-48 w-full rounded-[var(--radius-md)] border border-[var(--line)] bg-white object-contain p-1 dark:bg-[#101319]"
           loading="lazy"
         />
       )}

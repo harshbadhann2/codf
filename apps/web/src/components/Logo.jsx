@@ -25,11 +25,13 @@ export function LogoMark({ size = 40, animated = false, className = '' }) {
     >
       <defs>
         {/* Fixed brand colours, not theme tokens: a mark that changes hue
-            between light and dark is two marks. These match the favicon so the
-            tab icon and the header are the same object. */}
+            between light and dark is two marks. Amber into crimson — the two
+            ends of the palette's hot axis, so the mark is a swatch of the
+            system it sits in. These match the favicon so the tab icon and the
+            header are the same object. */}
         <linearGradient id="codf-mark" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#f97316" />
-          <stop offset="100%" stopColor="#0d9488" />
+          <stop offset="0%" stopColor="#ffb43a" />
+          <stop offset="100%" stopColor="#d92544" />
         </linearGradient>
       </defs>
 
@@ -46,7 +48,7 @@ export function LogoMark({ size = 40, animated = false, className = '' }) {
 
       {/* Code chevrons */}
       <g
-        stroke="#0d9488"
+        stroke="#d92544"
         strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"

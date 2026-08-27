@@ -190,7 +190,7 @@ export default function CompressPanel({ onSubmit, isBusy, maxFileSizeMb }) {
           <img
             src={previewUrl}
             alt="Preview of the image you selected"
-            className="max-h-48 w-full rounded-xl border border-[var(--line)] bg-white object-contain dark:bg-slate-900"
+            className="max-h-48 w-full rounded-xl border border-[var(--line)] bg-white object-contain dark:bg-[#101319]"
           />
           <figcaption className="mt-1 text-xs text-[var(--ink-muted)]">
             Before: {formatBytes(file.size)}
@@ -199,7 +199,7 @@ export default function CompressPanel({ onSubmit, isBusy, maxFileSizeMb }) {
       )}
 
       {alreadySmaller && (
-        <p className="rounded-xl border border-[var(--line)] bg-white/60 p-3 text-xs text-[var(--ink-muted)] dark:bg-slate-900/40">
+        <p className="rounded-xl border border-[var(--line)] bg-white/60 p-3 text-xs text-[var(--ink-muted)] dark:bg-[#101319]/60">
           This file is already under {targetKb} KB. Compressing it anyway will re-encode it at the best quality that
           still fits — useful if the form also rejects your current format.
         </p>

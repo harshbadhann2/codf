@@ -19,13 +19,22 @@ const CODE_LINES = [
   [{ w: 16, c: 'pl' }, { w: 22, c: 'str' }, { w: 10, c: 'pl' }]
 ];
 
+/* Syntax colours.
+   These depict the product's actual promise — highlighted code — so they stay
+   multi-hue rather than collapsing to one amber: a monochrome bar chart would
+   quietly stop saying "syntax highlighting". The palette's two-temperature
+   rule does the sorting instead. Tokens that carry meaning are lit (plasma,
+   amber, crimson); comments and plain text are cold slate, which is also the
+   right hierarchy — the eye goes to the code, not the prose around it.
+   Chosen mid-tone so they read on the dark source card and the light output
+   card alike. */
 const TOKEN_COLOUR = {
-  kw: 'bg-fuchsia-400/70',
-  fn: 'bg-sky-400/70',
-  str: 'bg-emerald-400/70',
-  num: 'bg-amber-400/70',
-  cm: 'bg-slate-400/40',
-  pl: 'bg-slate-400/60'
+  kw: 'bg-[#ff6a35]/85',
+  fn: 'bg-[#ffab2e]/85',
+  str: 'bg-[#e34a5b]/85',
+  num: 'bg-[#ffc74d]/85',
+  cm: 'bg-[#7c8698]/45',
+  pl: 'bg-[#98a2b3]/55'
 };
 
 const CARD = 'panel panel-lit relative z-10 w-[46%] max-w-[230px] overflow-hidden shadow-[var(--shadow-md)]';
@@ -45,9 +54,9 @@ function CodeCard({ delay = 0.35 }) {
   return (
     <div className={`${CARD} p-3`}>
       <div className="mb-2.5 flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-red-400/70" />
-        <span className="h-2 w-2 rounded-full bg-amber-400/70" />
-        <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
+        <span className="h-2 w-2 rounded-full bg-[#e34a5b]/75" />
+        <span className="h-2 w-2 rounded-full bg-[#ff6a35]/75" />
+        <span className="h-2 w-2 rounded-full bg-[#ffab2e]/75" />
         <span className="ml-1 font-mono text-[9px] text-[var(--ink-faint)]">main.py</span>
       </div>
 
@@ -81,25 +90,25 @@ function PageCard({ format = 'PDF', delay = 0.7, gutter = true }) {
 
   return (
     <div
-      className={`${CARD} bg-white/90 p-3 dark:bg-slate-100/95`}
+      className={`${CARD} bg-white/90 p-3 dark:bg-zinc-100/95`}
       style={{ animation: 'pop .6s var(--ease-spring) both', animationDelay: `${delay}s` }}
     >
       <div className="sheen" />
 
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="flex-1 space-y-1">
-          <div className="h-[7px] w-[70%] rounded-full bg-slate-800/80" />
-          <div className="h-[4px] w-[45%] rounded-full bg-slate-400/70" />
+          <div className="h-[7px] w-[70%] rounded-full bg-zinc-800/80" />
+          <div className="h-[4px] w-[45%] rounded-full bg-zinc-400/70" />
         </div>
-        <FormatChip label={format} tone={isPdf ? 'bg-red-500/15 text-red-600' : 'bg-blue-500/15 text-blue-600'} />
+        <FormatChip label={format} tone={isPdf ? 'badge-pdf' : 'badge-doc'} />
       </div>
 
       {gutter ? (
-        <div className="rounded-lg bg-slate-50 p-2 ring-1 ring-slate-900/10">
+        <div className="rounded-lg bg-zinc-50 p-2 ring-1 ring-zinc-900/10">
           <div className="pulse-lit space-y-[6px]">
             {CODE_LINES.map((line, row) => (
               <div key={row} className="flex items-center gap-1.5">
-                <span className="w-2 shrink-0 text-right font-mono text-[7px] leading-none text-slate-400">
+                <span className="w-2 shrink-0 text-right font-mono text-[7px] leading-none text-zinc-500">
                   {row + 1}
                 </span>
                 {line.map((token, index) => (
@@ -126,7 +135,7 @@ function PageCard({ format = 'PDF', delay = 0.7, gutter = true }) {
             ) : (
               <div
                 key={row}
-                className="h-[4px] rounded-full bg-slate-300"
+                className="h-[4px] rounded-full bg-zinc-300"
                 style={{
                   width: `${width}%`,
                   animation: 'fade .4s ease-out both',
@@ -139,8 +148,8 @@ function PageCard({ format = 'PDF', delay = 0.7, gutter = true }) {
       )}
 
       <div className="mt-2 flex items-center justify-between">
-        <div className="h-[3px] w-[26%] rounded-full bg-slate-300" />
-        <div className="h-[3px] w-[14%] rounded-full bg-slate-300" />
+        <div className="h-[3px] w-[26%] rounded-full bg-zinc-300" />
+        <div className="h-[3px] w-[14%] rounded-full bg-zinc-300" />
       </div>
     </div>
   );
@@ -161,9 +170,9 @@ function MarkdownCard({ delay = 0.35 }) {
   return (
     <div className={`${CARD} p-3`}>
       <div className="mb-2.5 flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-red-400/70" />
-        <span className="h-2 w-2 rounded-full bg-amber-400/70" />
-        <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
+        <span className="h-2 w-2 rounded-full bg-[#e34a5b]/75" />
+        <span className="h-2 w-2 rounded-full bg-[#ff6a35]/75" />
+        <span className="h-2 w-2 rounded-full bg-[#ffab2e]/75" />
         <span className="ml-1 font-mono text-[9px] text-[var(--ink-faint)]">README.md</span>
       </div>
 
@@ -177,10 +186,10 @@ function MarkdownCard({ delay = 0.35 }) {
               className="flex items-center gap-1.5"
               style={{ animation: 'rise .5s var(--ease-out) both', animationDelay: `${delay + row * 0.06}s` }}
             >
-              {line.hash && <span className="font-mono text-[8px] leading-none text-fuchsia-400/80">#</span>}
-              {line.bullet && <span className="font-mono text-[8px] leading-none text-sky-400/80">-</span>}
+              {line.hash && <span className="font-mono text-[8px] leading-none text-[#ff6a35]">#</span>}
+              {line.bullet && <span className="font-mono text-[8px] leading-none text-[#ffab2e]">-</span>}
               <span
-                className={`h-[5px] rounded-full ${line.hash ? 'bg-slate-300/80' : 'bg-slate-400/55'}`}
+                className={`h-[5px] rounded-full ${line.hash ? 'bg-zinc-300/80' : 'bg-[#98a2b3]/55'}`}
                 style={{ width: `${line.w}%` }}
               />
             </div>
@@ -207,15 +216,16 @@ function PhotoCard({ format, weight, delay = 0.35, shrunk = false, animateIn = '
         <svg viewBox="0 0 120 84" className="block w-full" role="img" aria-label="Example photograph">
           <defs>
             <linearGradient id={`sky-${format}-${shrunk}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#7dd3fc" />
-              <stop offset="100%" stopColor="#e0f2fe" />
+              <stop offset="0%" stopColor="#ff7a3c" />
+              <stop offset="52%" stopColor="#ffc74d" />
+              <stop offset="100%" stopColor="#ffe9bd" />
             </linearGradient>
           </defs>
           <rect width="120" height="84" fill={`url(#sky-${format}-${shrunk})`} />
-          <circle cx="92" cy="22" r="9" fill="#fbbf24" />
-          <path d="M0 84 L34 40 L60 84 Z" fill="#0f766e" opacity="0.85" />
-          <path d="M42 84 L74 46 L106 84 Z" fill="#115e59" opacity="0.9" />
-          <rect y="76" width="120" height="8" fill="#064e3b" opacity="0.5" />
+          <circle cx="92" cy="24" r="9" fill="#e3384a" />
+          <path d="M0 84 L34 40 L60 84 Z" fill="#2a2f3a" opacity="0.9" />
+          <path d="M42 84 L74 46 L106 84 Z" fill="#171b22" opacity="0.95" />
+          <rect y="76" width="120" height="8" fill="#0e1116" opacity="0.6" />
         </svg>
       </div>
 
@@ -231,36 +241,36 @@ function PhotoCard({ format, weight, delay = 0.35, shrunk = false, animateIn = '
 function TypesetCard({ delay = 0.65 }) {
   return (
     <div
-      className={`${CARD} bg-white/90 p-3 dark:bg-slate-100/95`}
+      className={`${CARD} bg-white/90 p-3 dark:bg-zinc-100/95`}
       style={{ animation: 'pop .6s var(--ease-spring) both', animationDelay: `${delay}s` }}
     >
       <div className="sheen" />
 
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="flex-1 space-y-1">
-          <div className="h-[7px] w-[64%] rounded-full bg-slate-800/85" />
-          <div className="h-[1px] w-full bg-slate-300" />
+          <div className="h-[7px] w-[64%] rounded-full bg-zinc-800/85" />
+          <div className="h-[1px] w-full bg-zinc-300" />
         </div>
-        <FormatChip label="PDF" tone="bg-red-500/15 text-red-600" />
+        <FormatChip label="PDF" tone="badge-pdf" />
       </div>
 
       <div className="pulse-lit space-y-[6px]">
         {[94, 88, 70].map((width, row) => (
           <div
             key={row}
-            className="h-[4px] rounded-full bg-slate-300"
+            className="h-[4px] rounded-full bg-zinc-300"
             style={{ width: `${width}%`, animation: 'fade .4s ease-out both', animationDelay: `${delay + 0.2 + row * 0.05}s` }}
           />
         ))}
       </div>
 
       {/* The code panel is the point: whole, never sliced by a page break. */}
-      <div className="mt-2 rounded-md bg-slate-50 p-1.5 ring-1 ring-slate-900/10">
+      <div className="mt-2 rounded-md bg-zinc-50 p-1.5 ring-1 ring-zinc-900/10">
         <div className="space-y-[5px]">
           {[[22, 34], [16, 28], [30, 18]].map((pair, row) => (
             <div key={row} className="flex items-center gap-1">
-              <span className="h-[3px] rounded-full bg-fuchsia-400/70" style={{ width: `${pair[0]}%` }} />
-              <span className="h-[3px] rounded-full bg-sky-400/70" style={{ width: `${pair[1]}%` }} />
+              <span className="h-[3px] rounded-full bg-[#ff6a35]/75" style={{ width: `${pair[0]}%` }} />
+              <span className="h-[3px] rounded-full bg-[#ffab2e]/75" style={{ width: `${pair[1]}%` }} />
             </div>
           ))}
         </div>
