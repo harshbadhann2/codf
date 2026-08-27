@@ -45,9 +45,9 @@ export default function DocumentPanel({ onSubmit, isBusy, maxFileSizeMb, can, re
       />
 
       {!isAvailable && (
-        <div className="animate-pop rounded-[var(--radius-md)] border border-amber-500/35 bg-amber-500/10 p-3 text-xs">
-          <p className="font-semibold text-amber-800 dark:text-amber-200">This conversion is not available right now</p>
-          <p className="mt-1 leading-relaxed text-amber-800/80 dark:text-amber-200/70">{unavailableReason}</p>
+        <div className="note note-warn animate-pop p-3 text-xs">
+          <p className="font-semibold">This conversion is not available right now</p>
+          <p className="note-detail mt-1 leading-relaxed">{unavailableReason}</p>
         </div>
       )}
 

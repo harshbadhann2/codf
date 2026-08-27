@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f766e" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f7fa" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#08090c" />
     <meta
       name="description"
       content="coDF converts code to syntax-highlighted PDFs, Word to PDF, PDF to Word, and between image formats — built for student assignments."
@@ -16,6 +17,34 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
     />
     <title>coDF · Student Utility Converter</title>
+    <script>
+      /*
+       * Resolve the theme before the first paint.
+       *
+       * React applies this class from an effect, and effects run after the
+       * browser has already painted — so a dark-mode visitor got a frame of
+       * the light theme on every single load. On a dark site that reads as a
+       * white flash, which is a poor first impression and unpleasant at night.
+       *
+       * Inline and synchronous on purpose: an external or deferred script
+       * would land on the wrong side of that first paint and change nothing.
+       * Kept deliberately in sync with getInitialTheme in hooks/useTheme.js,
+       * which reads the result back rather than resolving it a second time.
+       */
+      (function () {
+        try {
+          var stored = localStorage.getItem('codf-theme');
+          var isDark =
+            stored === 'dark' ||
+            (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+          document.documentElement.classList.toggle('dark', isDark);
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+        } catch (error) {
+          /* Private browsing can throw on localStorage; light is a safe default. */
+        }
+      })();
+    </script>
   </head>
   <body class="h-full">
     <div id="root" class="h-full"></div>

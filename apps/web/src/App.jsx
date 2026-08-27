@@ -248,7 +248,7 @@ export default function App() {
 
           {/* The preview follows the active tab, so it always illustrates the
               conversion in front of you rather than a fixed example. */}
-          <section className="reveal glass panel-lit rounded-[var(--radius-lg)] p-3 sm:p-4">
+          <section className="reveal reveal-right glass panel-lit lift rounded-[var(--radius-lg)] p-3 sm:p-4">
             <Hero variant={activeTab} />
           </section>
         </header>
@@ -281,7 +281,7 @@ export default function App() {
             id={`panel-${activeTab}`}
             role="tabpanel"
             aria-labelledby={`tab-${activeTab}`}
-            className="panel panel-lit animate-fade p-4 shadow-[var(--shadow-md)] sm:p-6"
+            className="panel panel-lit panel-accent animate-panel p-4 shadow-[var(--shadow-md)] sm:p-6"
           >
             {activeTab === 'code' && (
               <CodePanel onSubmit={handleCodeSubmit} isBusy={isBusy} maxFileSizeMb={maxFileSizeMb} />
@@ -329,11 +329,11 @@ export default function App() {
           </section>
 
           <aside className="space-y-4 lg:sticky lg:top-6">
-            <div className="panel panel-lit p-4 shadow-[var(--shadow-md)] sm:p-5">
+            <div className="panel panel-lit lift p-4 shadow-[var(--shadow-md)] sm:p-5">
               <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--ink-muted)]">
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${
-                    isBusy ? 'animate-pulse bg-[var(--accent-2)]' : 'bg-[var(--accent)]'
+                    isBusy ? 'beacon bg-[var(--accent-2)]' : 'bg-[var(--accent)]'
                   }`}
                 />
                 Status
@@ -347,7 +347,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={cancel}
-                      className="focus-ring text-xs font-semibold text-[var(--accent-2)] underline underline-offset-2"
+                      className="focus-ring text-xs font-semibold text-[var(--accent-2-ink)] underline underline-offset-2"
                     >
                       Cancel
                     </button>
@@ -357,7 +357,7 @@ export default function App() {
                 {error && !isBusy && (
                   <div
                     role="alert"
-                    className="animate-pop rounded-[var(--radius-md)] border border-red-400/40 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-200"
+                    className="note note-danger animate-pop p-3 text-sm"
                   >
                     {error}
                   </div>
@@ -384,9 +384,9 @@ export default function App() {
               </div>
             </div>
 
-            <div className="panel panel-lit p-4 sm:p-5">
+            <div className="reveal reveal-scale panel panel-lit lift p-4 sm:p-5">
               <p className="text-sm font-bold">How your files are handled</p>
-              <ul className="mt-3 space-y-2.5 text-xs leading-relaxed text-[var(--ink-muted)]">
+              <ul className="reveal reveal-stagger mt-3 space-y-2.5 text-xs leading-relaxed text-[var(--ink-muted)]">
                 {[
                   'Checked by content, not just the file extension.',
                   'Deleted automatically — nothing is kept after you leave.',

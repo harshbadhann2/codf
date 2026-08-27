@@ -184,7 +184,7 @@ export default function MarkdownPanel({ onSubmit, isBusy, maxFileSizeMb, maxPdfP
           onChange={(event) => update({ markdown: event.target.value })}
           disabled={usingFile}
           spellCheck={false}
-          className="focus-ring h-56 w-full resize-y rounded-[var(--radius-md)] border border-[var(--line)] bg-slate-950 p-4 font-mono text-xs leading-relaxed text-teal-100 shadow-inner transition placeholder:text-slate-600 focus:border-[var(--accent)] disabled:opacity-40 sm:h-64"
+          className="code-well focus-ring h-56 sm:h-64"
           placeholder={usingFile ? 'Using the uploaded file instead…' : '# Heading\n\nYour Markdown here.'}
         />
       </div>

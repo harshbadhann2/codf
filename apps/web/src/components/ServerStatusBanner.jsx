@@ -20,17 +20,17 @@ export default function ServerStatusBanner({ status, attempt, error, onRetry }) 
 
   if (status === 'waking') {
     return (
-      <div className="animate-pop rounded-[var(--radius-md)] border border-amber-500/35 bg-amber-500/10 px-4 py-3 backdrop-blur">
+      <div className="note note-warn animate-pop px-4 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
           <span
-            className="spinner h-3.5 w-3.5 border-amber-500"
+            className="spinner h-3.5 w-3.5 border-[var(--warn)]"
             aria-hidden="true"
           />
-          <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+          <p className="text-sm font-semibold">
             Waking the server up… (attempt {attempt})
           </p>
         </div>
-        <p className="mt-1.5 pl-6 text-xs leading-relaxed text-amber-800/80 dark:text-amber-200/70">
+        <p className="note-detail mt-1.5 pl-6 text-xs leading-relaxed">
           The free server sleeps when idle. First load can take up to a minute — you can start filling in the form
           while you wait.
         </p>
@@ -39,11 +39,11 @@ export default function ServerStatusBanner({ status, attempt, error, onRetry }) 
   }
 
   return (
-    <div className="animate-pop rounded-[var(--radius-md)] border border-red-500/35 bg-red-500/10 px-4 py-3 backdrop-blur">
-      <p className="text-sm font-semibold text-red-700 dark:text-red-200">Cannot reach the conversion server</p>
-      <p className="mt-1 text-xs text-red-700/80 dark:text-red-200/70">{error || 'The server did not respond.'}</p>
+    <div className="note note-danger animate-pop px-4 py-3 backdrop-blur">
+      <p className="text-sm font-semibold">Cannot reach the conversion server</p>
+      <p className="note-detail mt-1 text-xs">{error || 'The server did not respond.'}</p>
 
-      <p className="mt-2 break-all font-mono text-[11px] text-red-700/60 dark:text-red-200/50">
+      <p className="mt-2 break-all font-mono text-[11px] opacity-70">
         {API_BASE_URL}
         {!IS_CROSS_ORIGIN && ' (same origin — is the local API running?)'}
       </p>
@@ -51,7 +51,7 @@ export default function ServerStatusBanner({ status, attempt, error, onRetry }) 
       <button
         type="button"
         onClick={onRetry}
-        className="focus-ring mt-3 rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-red-700 active:scale-95"
+        className="focus-ring mt-3 rounded-lg bg-[var(--danger)] px-3.5 py-1.5 text-xs font-bold text-[var(--bg)] transition hover:brightness-110 active:scale-95"
       >
         Try again
       </button>

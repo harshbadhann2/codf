@@ -3,51 +3,76 @@
 @tailwind utilities;
 
 /* ───────────────────────── Design tokens ─────────────────────────
-   One warm-technical system in two themes. Surfaces are translucent
-   so the ambient background reads through the cards, which is what
-   makes the whole page feel like one object rather than a stack of
-   boxes on a flat colour. */
+   One system, two themes, and one rule running through both: every
+   structural colour is cold, every accent is hot, and nothing sits in
+   between.
+
+   That split is the whole palette. A warm grey beside a warm accent
+   collapses into a single muddy hue — the neutrals stop reading as
+   structure and the accent stops reading as light. Keeping the obsidian
+   and tungsten resolutely cold is what leaves the amber somewhere to
+   burn. Surfaces are translucent so the ambient field reads through
+   them, which is what makes the page feel like one object rather than a
+   stack of boxes on a flat colour. */
 
 :root {
-  /* Light theme.
-     The previous values were warm greys throughout, which read as tasteful but
-     timid — nothing on the page had any conviction. These raise the contrast of
-     the ink, deepen the accents so they carry against a bright page, and let
-     the ambient colour actually show instead of washing to beige. */
-  --bg: #f6f4ef;
-  --bg-deep: #e9e4da;
+  /* ── Obsidian & Filament, light ────────────────────────────────────
+     Daylight version of the same idea: cool paper and obsidian ink, with
+     the filament accents deepened until they hold their own against a
+     bright ground. The accents darken between themes but never shift
+     hue — it is one palette at two exposures, not two palettes. */
+  --bg: #f5f7fa;
+  --bg-deep: #e3e8f0;
   --surface: 255 255 255;
-  --surface-alpha: 0.78;
+  --surface-alpha: 0.82;
   --surface-solid: #ffffff;
-  --ink: #0d1420;
-  --ink-muted: #4b586b;
-  --ink-faint: #7d8899;
-  --line: rgba(13, 20, 32, 0.11);
-  --line-strong: rgba(13, 20, 32, 0.2);
+  --surface-raised: 248 250 253;
+  --rim: rgba(255, 255, 255, 0.8);
 
-  /* Deeper and more saturated: the old teal went muddy against white, and the
-     orange was closer to brown than to a highlight. */
-  --accent: #0b6e66;
-  --accent-soft: #cdefe9;
+  --ink: #0e1116;
+  --ink-muted: #4a5262;
+  /* Measured 4.60:1 on --bg. The previous #6b7484 came to 4.39:1 — close
+     enough to look right, and still a fail for the 12px hints and file sizes
+     this carries. Kept clearly lighter than --ink-muted so the two still read
+     as separate levels. */
+  --ink-faint: #68717f;
+  --line: rgba(14, 17, 22, 0.12);
+  --line-strong: rgba(14, 17, 22, 0.24);
+
+  /* Deep enough to carry small type on paper. The dark theme's brighter
+     amber measures under 3:1 here, which is why these are not shared. */
+  --accent: #b4530b;
+  --accent-soft: #fdecd4;
   --accent-ink: #ffffff;
-  --accent-2: #d4530a;
-  --accent-2-soft: #ffe6d2;
+  --accent-2: #b21f2d;
+  --accent-2-soft: #fde3e4;
+  --accent-2-ink: #9e1f2b;
 
-  /* CTA button gradient. Same hue pair as the accents but its own tokens, so
-     it can be tuned for legibility on a solid fill without dragging every
-     other accent-coloured element (borders, focus rings, the tab thumb)
-     along with it. */
-  --cta-a: var(--accent-2);
-  --cta-b: var(--accent);
+  --cta-a: #c2410c;
+  --cta-b: #9a4406;
+  --cta-ink: #ffffff;
 
-  --glow-1: rgba(251, 146, 60, 0.3);
-  --glow-2: rgba(13, 148, 136, 0.28);
-  --glow-3: rgba(99, 102, 241, 0.16);
+  /* Status. Crimson is already load-bearing in this palette, so danger is
+     pushed darker and colder than the accent to stay distinguishable from
+     it, and warn moves to pure amber. Neither is ever the only signal:
+     every state also carries a label and an icon. */
+  --danger: #a51524;
+  --danger-soft: rgba(165, 21, 36, 0.08);
+  --danger-line: rgba(165, 21, 36, 0.32);
+  --warn: #8a5200;
+  --warn-soft: rgba(180, 110, 10, 0.12);
+  --warn-line: rgba(180, 110, 10, 0.34);
 
-  --shadow-sm: 0 1px 2px rgba(13, 20, 32, 0.06);
-  --shadow-md: 0 10px 28px -14px rgba(13, 20, 32, 0.26);
-  --shadow-lg: 0 30px 64px -30px rgba(13, 20, 32, 0.4);
-  --shadow-glow: 0 12px 30px -12px rgba(11, 110, 102, 0.45);
+  --glow-1: rgba(255, 150, 40, 0.24);
+  --glow-2: rgba(226, 70, 60, 0.16);
+  --glow-3: rgba(255, 110, 30, 0.14);
+
+  /* Cold shadows. A warm shadow on cool paper is the tell that a palette
+     was swapped on the accents only. */
+  --shadow-sm: 0 1px 2px rgba(14, 20, 32, 0.07);
+  --shadow-md: 0 10px 28px -14px rgba(14, 20, 32, 0.26);
+  --shadow-lg: 0 30px 64px -30px rgba(14, 20, 32, 0.4);
+  --shadow-glow: 0 12px 30px -12px rgba(194, 65, 12, 0.4);
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.22, 1.4, 0.36, 1);
@@ -56,40 +81,59 @@
 }
 
 :root.dark {
-  /* Dark theme. Slightly lifted from near-black so the surfaces separate, with
-     a touch of blue in the base — a neutral grey dark mode always looks dead. */
-  --bg: #070b14;
-  --bg-deep: #04060c;
-  --surface: 22 31 48;
-  --surface-alpha: 0.66;
-  --surface-solid: #111a2b;
-  --ink: #f0f4fa;
-  --ink-muted: #9daabf;
-  --ink-faint: #6a7793;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.19);
+  /* ── Obsidian & Filament, dark ─────────────────────────────────────
+     Obsidian, not a void: pure #000 smears on OLED and leaves the accents
+     nothing to sit against. Surfaces step up through tungsten to slate,
+     and that step is what stops a dark theme reading as light mode with
+     the lights off.
 
-  --accent: #35e0c8;
-  --accent-soft: rgba(53, 224, 200, 0.16);
-  --accent-ink: #04211e;
-  --accent-2: #ffa14d;
-  --accent-2-soft: rgba(255, 161, 77, 0.16);
+     Every neutral here — surfaces, hairlines, muted and faint ink — is
+     cold. The only warmth on the page is light that is meant to look
+     emitted: accents, glows, the phosphor in the code well. */
+  --bg: #08090c;
+  --bg-deep: #030406;
+  --surface: 21 24 30;
+  --surface-alpha: 0.82;
+  --surface-solid: #15181e;
+  --surface-raised: 31 36 44;
+  --rim: rgba(200, 220, 255, 0.15);
 
-  /* The plain accent pastels read as a candy gradient once they cover a whole
-     button rather than tinting an edge or a border — fine at low-alpha, cheap
-     at full strength on near-black. These are the same two hues pulled darker
-     and more saturated, so the button reads as metal catching light rather
-     than a soap bubble. */
-  --cta-a: #e07a30;
-  --cta-b: #0fae97;
+  --ink: #edf0f6;
+  --ink-muted: #a2abbb;
+  --ink-faint: #7c8698;
+  --line: rgba(170, 195, 230, 0.13);
+  --line-strong: rgba(170, 195, 230, 0.26);
 
-  --glow-1: rgba(249, 115, 22, 0.2);
-  --glow-2: rgba(20, 184, 166, 0.22);
-  --glow-3: rgba(129, 140, 248, 0.16);
+  --accent: #ffab2e;
+  --accent-soft: rgba(255, 171, 46, 0.15);
+  --accent-ink: #12090a;
+  --accent-2: #ff6a35;
+  --accent-2-soft: rgba(255, 106, 53, 0.16);
+  --accent-2-ink: #ff8a4c;
 
-  --shadow-md: 0 10px 28px -14px rgba(0, 0, 0, 0.65);
-  --shadow-lg: 0 30px 64px -30px rgba(0, 0, 0, 0.8);
-  --shadow-glow: 0 12px 32px -14px rgba(53, 224, 200, 0.35);
+  /* Bright fills need a dark label — white on these measures under 3:1. */
+  --cta-a: #ff6a35;
+  --cta-b: #ffb43a;
+  --cta-ink: #140b02;
+
+  --danger: #ff4d63;
+  --danger-soft: rgba(255, 77, 99, 0.14);
+  --danger-line: rgba(255, 77, 99, 0.4);
+  --warn: #ffb638;
+  --warn-soft: rgba(255, 182, 56, 0.13);
+  --warn-line: rgba(255, 182, 56, 0.36);
+
+  /* Amber, crimson and plasma orange — three points along the same hot
+     axis, so they sum to one light source rather than three competing
+     ones. `screen` (see .orb) keeps them glowing rather than muddying. */
+  --glow-1: rgba(255, 150, 40, 0.1);
+  --glow-2: rgba(255, 58, 72, 0.075);
+  --glow-3: rgba(255, 110, 30, 0.06);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 10px 28px -14px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 30px 64px -30px rgba(0, 0, 0, 0.95), 0 4px 14px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 12px 32px -14px rgba(255, 140, 50, 0.34);
 }
 
 * {
@@ -129,6 +173,32 @@ body {
   background: linear-gradient(175deg, var(--bg) 0%, var(--bg-deep) 100%);
 }
 
+/* Scanlines — the surface the light falls on, not the light itself, so they
+   are cold like every other structural colour. Behind every piece of content
+   on purpose: laid over text they would cost legibility for a texture, which
+   is a bad trade. At a 3px period and ~2% alpha they read as grain on glass
+   and vanish entirely on a screenshot scaled down. */
+:root.dark .ambient {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(190, 210, 240, 0.022) 0 1px,
+      transparent 1px 3px
+    ),
+    linear-gradient(175deg, var(--bg) 0%, var(--bg-deep) 100%);
+}
+
+/* Corners fall away so the composition has a middle. The orbs are broad and
+   soft by design; left unchecked in dark mode they fill the frame evenly and
+   the result is a uniform murk rather than light coming from somewhere. */
+:root.dark .ambient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(125% 100% at 50% 2%, transparent 34%, rgba(3, 4, 6, 0.88) 100%);
+}
+
 .ambient::after {
   /* Fine grain stops the large gradients from banding on wide screens. */
   content: '';
@@ -141,8 +211,16 @@ body {
 .orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(70px);
+  filter: blur(96px);
   will-change: transform;
+}
+
+/* On a bright page, painting over is correct — the orbs tint the paper.
+   On a dark one it is not: covering near-black with 20%-alpha orange yields
+   mud, because there is no light underneath to tint. `screen` adds light
+   instead, which is what a glow physically is, and the hues stay hues. */
+:root.dark .orb {
+  mix-blend-mode: screen;
 }
 
 .orb-1 {
@@ -203,7 +281,7 @@ body {
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   border: 1px solid var(--line);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 var(--rim);
 }
 
 .panel {
@@ -212,6 +290,31 @@ body {
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: inset 0 1px 0 var(--rim);
+}
+
+/* The primary work surface earns one extra cue: a tinted top edge, so the eye
+   lands on the panel you are meant to be using rather than treating all three
+   cards as equals. Light mode has the white-on-paper contrast to do this on
+   its own and does not need it. */
+:root.dark .panel-accent::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-2) 22%,
+    var(--accent) 62%,
+    transparent
+  );
+  opacity: 0.5;
+}
+
+/* The second plane: rows and wells that sit on a panel rather than on the
+   page. Nesting needs its own step or everything inside a card looks painted
+   on it. */
+.panel-inset {
+  background: rgb(var(--surface-raised) / 0.5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
 }
 
 /* A hairline of light along the top edge — the detail that reads as
@@ -232,7 +335,8 @@ body {
 }
 
 :root.dark .panel-lit::before {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+  opacity: 1;
 }
 
 /* ───────────────────────── Type ───────────────────────── */
@@ -255,7 +359,18 @@ body {
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--accent-2);
+  color: var(--accent-2-ink);
+}
+
+/* The bloom around lit phosphor. Only in dark, only on the few things that
+   are meant to look emissive — spread everywhere it would just read as a
+   blurry page. */
+:root.dark .eyebrow {
+  text-shadow: 0 0 14px rgba(255, 171, 46, 0.4);
+}
+
+:root.dark .gradient-text {
+  filter: drop-shadow(0 0 18px rgba(255, 171, 46, 0.28));
 }
 
 /* ───────────────────────── Motion ───────────────────────── */
@@ -355,6 +470,114 @@ body {
 .reveal.is-visible {
   opacity: 1;
   transform: none;
+}
+
+/* Direction variants. Everything rising by the same 18px is what makes a
+   scripted page feel scripted — the eye reads one repeated gesture instead of
+   a composition. These let a section arrive from the side it lives on. */
+.reveal-left {
+  transform: translate3d(-26px, 0, 0);
+}
+
+.reveal-right {
+  transform: translate3d(26px, 0, 0);
+}
+
+.reveal-scale {
+  transform: scale(0.965) translate3d(0, 12px, 0);
+}
+
+.reveal-left.is-visible,
+.reveal-right.is-visible,
+.reveal-scale.is-visible {
+  transform: none;
+}
+
+/* On a phone these elements are full-bleed: there is no margin for them to
+   arrive from, and offsetting them sideways pushes the document wider than the
+   viewport (body clips it, but the page still reports the overflow and a
+   trackpad can still nudge it). Below the point where the layout goes
+   single-column, a horizontal reveal becomes a vertical one. */
+@media (max-width: 639px) {
+  .reveal-left,
+  .reveal-right {
+    transform: translate3d(0, 18px, 0);
+  }
+}
+
+/* Hand a revealed container's children their own small offsets, so a card
+   does not arrive as one solid slab. Cheap: one transition per child, all on
+   transform and opacity. */
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out);
+}
+
+.reveal-stagger.is-visible > * {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-stagger.is-visible > *:nth-child(1) { transition-delay: 0.04s; }
+.reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 0.1s; }
+.reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 0.16s; }
+.reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 0.22s; }
+.reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 0.28s; }
+.reveal-stagger.is-visible > *:nth-child(6) { transition-delay: 0.34s; }
+
+/* ── Tab panel entrance ──────────────────────────────────────────────
+   The work area is keyed on the active tab, so React tears the old panel down
+   and builds a new one. A plain fade makes that read as a flicker; a short
+   lift and a blur that resolves reads as a card being dealt. Kept brief —
+   this sits between a user and the thing they came to do. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.994);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+.animate-panel {
+  animation: panel-in 0.42s var(--ease-out) both;
+}
+
+/* ── Surfaces that answer the pointer ────────────────────────────────
+   A card that lifts a little under the cursor is the cheapest signal that a
+   page is alive rather than printed. Transform only, and only where there is
+   a real pointer to respond to. */
+@media (hover: hover) and (pointer: fine) {
+  .lift {
+    transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out),
+      border-color 0.35s var(--ease-out);
+  }
+
+  .lift:hover {
+    transform: translateY(-3px);
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-lg), inset 0 1px 0 var(--rim);
+  }
+}
+
+/* The status dot, while work is in flight. `animate-pulse` fades the whole
+   dot out and back, which looks like a rendering bug at 1.5px; a ring pushing
+   outward from a dot that stays put reads as a signal being sent. */
+.beacon {
+  position: relative;
+}
+
+.beacon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  animation: pulse-ring 1.8s var(--ease-out) infinite;
 }
 
 
@@ -558,6 +781,59 @@ body {
   cursor: not-allowed;
 }
 
+/* ── The code well ──────────────────────────────────────────────────
+   The one surface that stays dark in both themes: a code editor is a code
+   editor, and inverting it with the page would be a costume change in the
+   middle of a task.
+
+   In light mode it is the strongest contrast on the page and anchors the
+   layout by itself. In dark it needs help — sitting a near-black well inside
+   a dark panel reads as a hole punched through the card rather than a recess
+   in it. The lit top edge and the inner shadow are what give it a floor. */
+.code-well {
+  width: 100%;
+  resize: vertical;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: #080d16;
+  padding: 1rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: #ffdfae;
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.55);
+  transition: border-color 0.2s, box-shadow 0.25s var(--ease-out);
+}
+
+.code-well::placeholder {
+  /* Cold, like the well itself; the phosphor text is the only warm thing
+     in here. Measures 5.3:1 against the well background. */
+  color: #7c8698;
+}
+
+.code-well:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.55), 0 0 0 3px var(--accent-soft);
+}
+
+.code-well:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* A block caret, glowing, the way a terminal's does. */
+.code-well {
+  caret-color: var(--accent);
+}
+
+:root.dark .code-well {
+  border-color: rgba(255, 171, 46, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 2px 16px rgba(0, 0, 0, 0.65);
+}
+
 select.field {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23788397' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
@@ -577,7 +853,7 @@ select.field {
   padding: 0.7rem 1.35rem;
   font-weight: 700;
   font-size: 0.9rem;
-  color: #fff;
+  color: var(--cta-ink);
   background: linear-gradient(135deg, var(--cta-a), var(--cta-b) 78%);
   box-shadow:
     var(--shadow-glow),
@@ -722,7 +998,7 @@ select.field {
   bottom: 0.3rem;
   left: 0;
   border-radius: 999px;
-  background: linear-gradient(115deg, var(--accent-2), var(--accent) 80%);
+  background: linear-gradient(115deg, var(--cta-a), var(--cta-b) 80%);
   box-shadow: var(--shadow-glow);
   /* A gentler landing than a true spring: enough overshoot to feel alive, not
      enough to wobble. Transform and width only, so it stays on the compositor. */
@@ -755,7 +1031,7 @@ select.field {
 }
 
 .segment[aria-selected='true'] {
-  color: #fff;
+  color: var(--cta-ink);
 }
 
 /* Fingers need a bigger target than a mouse does. */
@@ -763,6 +1039,34 @@ select.field {
   .segment {
     padding: 0.65rem 1rem;
   }
+}
+
+/* ── Status surfaces ────────────────────────────────────────────────
+   Three components were each carrying the same hand-written amber/red
+   Tailwind strings, which is how a palette change misses a spot. Colour is
+   never the only signal here: every one of these also has a heading that
+   names the state, so a monochrome theme loses nothing that mattered. */
+.note {
+  border-width: 1px;
+  border-style: solid;
+  border-radius: var(--radius-md);
+}
+
+.note-warn {
+  border-color: var(--warn-line);
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.note-danger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* The second line of a note: present, but not competing with the heading. */
+.note-detail {
+  opacity: 0.85;
 }
 
 .chip {
@@ -776,6 +1080,26 @@ select.field {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--ink-muted);
+}
+
+/* ── Format badges printed on the paper cards ────────────────────────
+   PageCard and TypesetCard stay light in both themes: a rendered page is
+   paper, and inverting it with the interface would break the illusion the
+   whole illustration depends on. So these two badges are fixed rather than
+   themed — the dark theme's `--accent` (#ffab2e) measures about 1.9:1 on
+   near-white and would simply disappear off the page.
+
+   Both values are the light theme's own accents, so the badge still belongs
+   to the palette rather than being a third colour. Measured against the
+   card: crimson 7.8:1, ember 5.0:1 — both clear AA at this 8px weight. */
+.badge-pdf {
+  background: rgba(178, 31, 45, 0.12);
+  color: #9e1f2b;
+}
+
+.badge-doc {
+  background: rgba(180, 83, 11, 0.14);
+  color: #b4530b;
 }
 
 /* Dropzone states */
@@ -889,8 +1213,21 @@ select.field {
   .orb,
   .pulse-dot,
   .pulse-node,
-  .pulse-lit > * {
+  .pulse-lit > *,
+  .beacon::after {
     animation: none;
+  }
+
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale,
+  .reveal-stagger > * {
+    opacity: 1;
+    transform: none;
+  }
+
+  .lift:hover {
+    transform: none;
   }
 
   .tilt {

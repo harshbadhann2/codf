@@ -101,7 +101,7 @@ export default function Dropzone({ accept, file, onFileSelect, onClear, helpText
             <button
               type="button"
               onClick={onClear}
-              className="focus-ring shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold text-[var(--ink-muted)] transition hover:bg-red-500/10 hover:text-red-500"
+              className="focus-ring shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold text-[var(--ink-muted)] transition hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"
             >
               Remove
             </button>
