@@ -37,6 +37,10 @@ jobs:
       - name: Test
         run: npm test
         working-directory: apps/api
+        # Pinned empty so the suite can never pick up a real key and reach the
+        # LLM provider. The AI tests mock the SDK; the rest must not need it.
+        env:
+          LLM_API_KEY: ''
 
   web:
     name: Web — lint & build
