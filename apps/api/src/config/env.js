@@ -94,6 +94,9 @@ const env = {
   // Optional AI explanations in code PDFs. Off unless BOTH are set.
   llmApiKey: process.env.LLM_API_KEY || '',
   llmModel: process.env.LLM_MODEL || '',
+  // Longer code is not sent at all: an explanation of half a program misleads.
+  llmMaxCodeChars: toInt(process.env.LLM_MAX_CODE_CHARS, 12000),
+  llmTimeoutMs: toInt(process.env.LLM_TIMEOUT_MS, 20000),
 
   logLevel: process.env.LOG_LEVEL || (nodeEnv === 'test' ? 'silent' : 'info'),
 

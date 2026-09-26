@@ -31,7 +31,7 @@ const LINE_HEIGHT = 13.2;
 const FOOTER_SIZE = 8;
 const FOOTER_BAND = 18;
 const WRAP_INDENT = 10;
-const EXPLANATION_HEADING = 'AI explanation';
+const EXPLANATION_HEADING = 'AI-generated explanation – verify before submission';
 const EXPLANATION_GAP = 22;
 // Start the explanation on a fresh page rather than strand its heading at the bottom.
 const EXPLANATION_MIN_SPACE = 110;

@@ -72,6 +72,22 @@ export default function ResultCard({ result, onReset }) {
         </div>
       )}
 
+      {/* Only present when the AI explanation was requested. Never blocks the download. */}
+      {result.aiExplanation?.status === 'included' && (
+        <p className="rounded-[var(--radius-md)] border border-[var(--line)] bg-[rgb(var(--surface)/0.6)] p-3 text-[11px] leading-relaxed text-[var(--ink-muted)]">
+          An AI-generated explanation was added under your code. Check it before you submit — it can be wrong.
+        </p>
+      )}
+
+      {result.aiExplanation?.status === 'skipped' && (
+        <p
+          role="status"
+          className="rounded-[var(--radius-md)] border border-[var(--warn-line)] bg-[var(--warn-soft)] p-3 text-[11px] leading-relaxed text-[var(--warn)]"
+        >
+          {result.aiExplanation.reason} Your PDF was generated without the AI explanation.
+        </p>
+      )}
+
       <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--ink-muted)]">
         {result.detectedLanguage && (
           <div className="flex gap-1.5">

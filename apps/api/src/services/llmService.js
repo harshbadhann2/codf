@@ -3,6 +3,7 @@
 const { Anthropic } = require('@anthropic-ai/sdk');
 const { env } = require('../config/env');
 const { logger } = require('../utils/logger');
+const { redactSecrets } = require('../utils/redactSecrets');
 const { SYSTEM_PROMPT, buildUserMessage } = require('../prompts/codeExplanation');
 
 // Whatever the model returns, this is the most we print into the PDF.
@@ -17,9 +18,13 @@ function isConfigured() {
 
 let sharedClient;
 
-/** One client per process: it keeps its HTTP connection pool between requests. */
+/**
+ * One client per process: it keeps its HTTP connection pool between requests.
+ * The SDK retries timeouts too, so the worst case wait is timeout x 2 (40 s by
+ * default) — well inside the web client's 180 s conversion timeout.
+ */
 function defaultClient() {
-  sharedClient ??= new Anthropic({ apiKey: env.llmApiKey });
+  sharedClient ??= new Anthropic({ apiKey: env.llmApiKey, timeout: env.llmTimeoutMs, maxRetries: 1 });
   return sharedClient;
 }
 
@@ -89,24 +94,47 @@ async function requestExplanation({ code, language }, client) {
   return parseExplanation(text);
 }
 
+/** A short, user-facing reason for a failed call. Details go to the log, not the student. */
+function reasonFor(error) {
+  if (error instanceof Anthropic.APIConnectionTimeoutError) return 'The AI service took too long to respond.';
+  if (error instanceof Anthropic.RateLimitError) return 'The AI service is busy right now.';
+  if (error instanceof ExplanationError) return 'The AI response could not be understood.';
+  return 'The AI service is unavailable right now.';
+}
+
 /**
  * Explains a program for the PDF. Never throws: the PDF must not depend on the
  * AI feature, so every failure becomes `{ status: 'skipped', reason }` and the
  * caller renders the document without an explanation.
  *
- * `client` is injectable so tests never reach the real API.
+ * Safeguards, in order: the feature must be configured, the code must be
+ * within the size limit, and likely secrets are masked before anything leaves
+ * the server. `client` is injectable so tests never reach the real API.
  */
 async function explainCode({ code, language }, { client } = {}) {
   if (!isConfigured()) {
     return { status: 'skipped', reason: 'AI explanations are not configured on this server.' };
   }
 
+  if (code.length > env.llmMaxCodeChars) {
+    return {
+      status: 'skipped',
+      reason: `Your code is ${code.length.toLocaleString()} characters; AI explanations are limited to ${env.llmMaxCodeChars.toLocaleString()}.`
+    };
+  }
+
+  const redacted = redactSecrets(code);
+
+  if (redacted.count > 0) {
+    logger.info('Redacted likely secrets before the AI request', { count: redacted.count });
+  }
+
   try {
-    const explanation = await requestExplanation({ code, language }, client || defaultClient());
+    const explanation = await requestExplanation({ code: redacted.text, language }, client || defaultClient());
     return { status: 'included', explanation };
   } catch (error) {
     logger.warn('AI explanation failed; rendering the PDF without it', { error: error.message });
-    return { status: 'skipped', reason: 'The AI explanation could not be generated.' };
+    return { status: 'skipped', reason: reasonFor(error) };
   }
 }
 
