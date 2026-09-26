@@ -1,5 +1,7 @@
 # coDF
 
+[![CI](https://github.com/harshbadhann2/codf/actions/workflows/ci.yml/badge.svg)](https://github.com/harshbadhann2/codf/actions/workflows/ci.yml)
+
 A student utility converter: turn source code into a clean, syntax-highlighted PDF, convert Word ↔ PDF, and convert between image formats.
 
 **Frontend** (React + Vite) deploys to **Vercel**. **API** (Node + Express, in Docker) deploys to **Render**.
@@ -65,6 +67,7 @@ The response reports which conversions this deployment can actually perform, and
 ## Features
 
 - **Code → PDF** — syntax highlighting for 190+ languages via highlight.js, rendered with JetBrains Mono, with line numbers, a title/subtitle block, and page footers. Accepts pasted code or an uploaded file, including Jupyter notebooks (`.ipynb`, flattened with markdown cells as comments).
+- **AI code explanations (optional)** — tick "Include AI explanation" and the code PDF gains a section under the listing: what the program does, its approach, and its time/space complexity, written by an Anthropic Claude model. Off by default; secrets are redacted before the code leaves the server, and the PDF is still produced if the AI call fails. See [AI code explanations](#ai-code-explanations).
 - **Markdown → Word** — a real .docx built with Word's own styles (Heading 1..6, List Bullet, List Number, Quote, Table Grid), so the recipient can restyle and keep editing it. Real hyperlinks, nested lists, and the arrows, symbols and emoji a PDF's standard fonts cannot encode.
 - **Markdown → PDF** — a real typesetter rather than a print stylesheet: headings, lists, tables, blockquotes, task lists and syntax-highlighted code, in a light or dark page theme. Every block is measured before anything is drawn, so a code listing is never sliced in half by a page break and a heading never ends up alone at the foot of a page.
 - **PDF / Word → Markdown** — the reverse trip. A `.docx` states its own structure, so headings, lists, tables, bold, italics and links come across almost exactly. A PDF states nothing, so structure is inferred from the layout — font size ranked against the document's own body size, weight, indentation — and hard-wrapped lines are rejoined into real paragraphs. The result view says which of the two happened, because one is exact and the other is a good guess.
@@ -92,8 +95,8 @@ Base URL: `https://<your-api>/api`
 | --- | --- | --- | --- |
 | `GET` | `/health` | — | Status, limits, capabilities, queue depth, CORS check |
 | `GET` | `/health/ping` | — | Cheap liveness probe (`pong`) |
-| `POST` | `/convert/code-to-pdf` | JSON: `code`, `filename?`, `language?`, `title?`, `section?` | |
-| `POST` | `/convert/code-file-to-pdf` | multipart: `file` + the same optional fields | |
+| `POST` | `/convert/code-to-pdf` | JSON: `code`, `filename?`, `language?`, `title?`, `section?`, `explain?` (`true` adds the AI explanation) | Response gains `aiExplanation` when `explain` is set |
+| `POST` | `/convert/code-file-to-pdf` | multipart: `file` + the same optional fields (`explain=true`) | |
 | `POST` | `/convert/markdown-to-pdf` | JSON: `markdown`, `filename?`, `title?`, `subtitle?`, `theme?` (`light`\|`dark`), `pageSize?` (`a4`\|`letter`) | |
 | `POST` | `/convert/markdown-file-to-pdf` | multipart: `file` + the same optional fields | |
 | `POST` | `/convert/markdown-to-docx` | JSON: `markdown`, `filename?`, `title?`, `subtitle?`, `pageSize?` | Needs Python |
@@ -135,6 +138,71 @@ Failure:
 
 `requestId` also comes back in the `X-Request-Id` header — use it to find the matching line in the Render logs.
 
+## AI code explanations
+
+An optional section at the end of a code PDF, headed **"AI-generated explanation – verify before submission"**, with four parts: *What it does*, *Approach*, *Time complexity*, *Space complexity*.
+
+### How a request flows
+
+```
+ browser                      Express API                                     Anthropic
+ ───────                      ───────────                                     ─────────
+ toggle on ──► POST /convert/code-to-pdf { code, explain: true }
+                 │
+                 ├─ explain not set? ──► original path, byte-for-byte unchanged
+                 │
+                 ▼ llmService.explainCode()        (never throws)
+                 ├─ LLM_API_KEY or LLM_MODEL unset? ─────────► skipped: "not configured"
+                 ├─ code > LLM_MAX_CODE_CHARS?  ─────────────► skipped: "limited to N chars"
+                 ├─ redactSecrets(code)
+                 ├─ messages.create(system prompt, <code>…</code>) ──────────► model
+                 │     timeout LLM_TIMEOUT_MS, 1 retry                 ◄────── JSON text
+                 ├─ parseExplanation(): strip ```json fence, JSON.parse,
+                 │     check every field is a non-empty string, cap lengths
+                 │     any failure ──────────────────────────► skipped: specific reason
+                 ▼
+               jobQueue ──► codePdf.service renders code + explanation section
+                 │
+                 ▼
+ 201 { downloadUrl, …, aiExplanation: { status: "included" | "skipped", reason? } }
+```
+
+- **Where the code lives:** the prompt is in [`src/prompts/codeExplanation.js`](apps/api/src/prompts/codeExplanation.js), the SDK call and validation in [`src/services/llmService.js`](apps/api/src/services/llmService.js), redaction in [`src/utils/redactSecrets.js`](apps/api/src/utils/redactSecrets.js), and the PDF section in `drawExplanation` in [`codePdf.service.js`](apps/api/src/services/codePdf.service.js).
+- **Prompt design:** the system prompt sets a teaching-assistant role, gives the exact JSON shape with an example value for every field, and tells the model to treat everything inside `<code>` as data, never as instructions, so a comment in the submitted code cannot redirect it.
+- **The LLM call happens before the PDF job is queued.** The API renders one heavy job at a time on a 512 MB instance; waiting on a model while holding that slot would stall every other user's conversion.
+
+### Responsible-AI safeguards
+
+| Safeguard | Implementation |
+| --- | --- |
+| Opt-in only | The toggle defaults to off. With it off, no code is sent anywhere and the request is identical to before the feature existed. |
+| Secret redaction | Before sending, provider keys (`sk-…`, `AKIA…`, `ghp_…`, `xox…`, `AIza…`, Stripe live keys), JWTs, `Bearer` tokens, PEM private keys, string literals assigned to names like `password`/`secret`/`api_key`/`token`, and email addresses become `[REDACTED_<KIND>]`. Only the count is logged, never the values. |
+| Input size limit | Code over `LLM_MAX_CODE_CHARS` (default 12,000) is not sent, and the reason is shown. It is not truncated, because an explanation of half a program would be misleading. |
+| Never breaks the PDF | A missing key or model, a timeout, a rate limit, an API error or a malformed response all produce the normal PDF plus a non-blocking notice explaining why the section is missing. |
+| Output validation | Only a JSON object with the four expected non-empty string fields is accepted. Each field is length-capped, and the text is transliterated to what the PDF's fonts can actually draw. |
+| Clear labelling | The section heading says it is AI-generated and must be verified; the result card says the same. |
+
+### Configuration
+
+Set both in `apps/api/.env` locally (copy [`apps/api/.env.example`](apps/api/.env.example)), or in the Render dashboard. **If either is missing the feature is simply off**, and everything else works as before.
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `LLM_API_KEY` | *(unset)* | Anthropic API key. Never committed; `.env` is git-ignored. |
+| `LLM_MODEL` | *(unset)* | Model ID, e.g. `claude-haiku-4-5` (fast and inexpensive for short explanations). |
+| `LLM_MAX_CODE_CHARS` | `12000` | Longest code that will be sent for an explanation. |
+| `LLM_TIMEOUT_MS` | `20000` | Per-attempt timeout. The SDK retries once, so the worst case is about 2× this. |
+
+### Tests
+
+```bash
+npm test
+```
+
+The API suite uses Node's built-in `node:test` runner. [`test/llm.test.js`](apps/api/test/llm.test.js) covers redaction (including ordinary code that must *not* be touched), JSON parsing and validation, every fallback path through an injected fake client, and end-to-end requests through the real Express app with the SDK's `Messages.create` mocked. No test can reach the real API: tests set the key themselves, and CI pins `LLM_API_KEY` to empty.
+
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every push and pull request: API lint and tests, web lint and production build, and a Docker job that builds the production image, waits for it to report healthy, checks every conversion engine is present, and converts code to a PDF through the running container.
+
 ## Project layout
 
 ```
@@ -149,6 +217,7 @@ codf/
 │   │   │   ├── config/       env, cors, multer
 │   │   │   ├── controllers/  request → service → response
 │   │   │   ├── middleware/   validation, rate limits, capability guard, errors
+│   │   │   ├── prompts/      LLM system prompts, kept apart from the code that sends them
 │   │   │   ├── routes/
 │   │   │   ├── services/     the actual conversions
 │   │   │   └── utils/        job queue, cleanup, logging, filename safety

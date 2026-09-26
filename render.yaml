@@ -51,6 +51,12 @@ services:
       - key: TRUST_PROXY
         value: "1"
 
+      # ── Optional AI code explanations. Off unless both are set. ─────────
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        value: claude-haiku-4-5
+
       - key: LIBREOFFICE_PATH
         value: /usr/bin/soffice
       - key: PYTHON_PATH
