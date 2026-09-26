@@ -20,6 +20,7 @@ const { renderMarkdownPdf } = require('../services/markdownPdf.service');
 const { renderMarkdownDocx } = require('../services/markdownDocx.service');
 const { extractTextFromImage, extractTextFromPdf } = require('../services/ocr.service');
 const { convertToMarkdown } = require('../services/docToMarkdown.service');
+const { explainCode } = require('../services/llmService');
 
 /**
  * Builds the response payload for a finished conversion.
@@ -65,8 +66,18 @@ function originalBaseName(req) {
   return sanitizeBaseName(path.parse(req.file.originalname || '').name);
 }
 
+/** JSON bodies send a boolean; multipart form fields always arrive as strings. */
+function wantsExplanation(value) {
+  return value === true || value === 'true';
+}
+
+/** The response fields for an AI explanation: whether it made it into the PDF, and why not. */
+function explanationNotice(outcome) {
+  return outcome.status === 'included' ? { status: 'included' } : { status: 'skipped', reason: outcome.reason };
+}
+
 const codeToPdfController = asyncHandler(async (req, res) => {
-  const { code, filename, language, title, section } = req.body || {};
+  const { code, filename, language, title, section, explain } = req.body || {};
 
   if (typeof code !== 'string' || !code.trim()) {
     throw AppError.badRequest('Paste some code before generating a PDF.');
@@ -78,11 +89,28 @@ const codeToPdfController = asyncHandler(async (req, res) => {
     );
   }
 
+  if (!wantsExplanation(explain)) {
+    const result = await conversionQueue.run('code-to-pdf', () =>
+      generateCodePdf({ code, filename, language, title, section })
+    );
+
+    finish(req, res, result, { detectedLanguage: result.detectedLanguage, lineCount: result.lineCount });
+    return;
+  }
+
+  // The LLM call happens before queueing, so a slow model response never holds
+  // the single PDF worker slot that every other conversion is waiting on.
+  const ai = await explainCode({ code, language });
+
   const result = await conversionQueue.run('code-to-pdf', () =>
-    generateCodePdf({ code, filename, language, title, section })
+    generateCodePdf({ code, filename, language, title, section, explanation: ai.explanation })
   );
 
-  finish(req, res, result, { detectedLanguage: result.detectedLanguage, lineCount: result.lineCount });
+  finish(req, res, result, {
+    detectedLanguage: result.detectedLanguage,
+    lineCount: result.lineCount,
+    aiExplanation: explanationNotice(ai)
+  });
 });
 
 const markdownToPdfController = asyncHandler(async (req, res) => {
@@ -163,23 +191,41 @@ const codeFileToPdfController = asyncHandler(async (req, res) => {
   const baseName = originalBaseName(req);
   const originalName = req.file.originalname;
 
-  const result = await withUpload(req, 'code-file-to-pdf', async (uploadedPath) => {
-    const parsed = await parseCodeFile({
-      filePath: uploadedPath,
-      originalName,
-      languageOverride: req.body.language || ''
-    });
+  const parse = (uploadedPath) =>
+    parseCodeFile({ filePath: uploadedPath, originalName, languageOverride: req.body.language || '' });
 
-    return generateCodePdf({
+  const render = (parsed, explanation) =>
+    generateCodePdf({
       code: parsed.code,
       filename: req.body.filename || baseName,
       language: parsed.language,
       title: req.body.title,
-      section: req.body.section
+      section: req.body.section,
+      explanation
     });
-  });
 
-  finish(req, res, result, { detectedLanguage: result.detectedLanguage, lineCount: result.lineCount });
+  if (!wantsExplanation(req.body.explain)) {
+    const result = await withUpload(req, 'code-file-to-pdf', async (uploadedPath) => render(await parse(uploadedPath)));
+
+    finish(req, res, result, { detectedLanguage: result.detectedLanguage, lineCount: result.lineCount });
+    return;
+  }
+
+  // Same reasoning as the paste route: read the file first, ask the model with
+  // no queue slot held, then queue only the PDF render. On a parse error the
+  // error middleware deletes the upload; on success it is deleted here.
+  const parsed = await parse(req.file.path);
+  await safeUnlink(req.file.path);
+  req.file = undefined;
+
+  const ai = await explainCode({ code: parsed.code, language: parsed.language });
+  const result = await conversionQueue.run('code-file-to-pdf', () => render(parsed, ai.explanation));
+
+  finish(req, res, result, {
+    detectedLanguage: result.detectedLanguage,
+    lineCount: result.lineCount,
+    aiExplanation: explanationNotice(ai)
+  });
 });
 
 const docxToPdfController = asyncHandler(async (req, res) => {

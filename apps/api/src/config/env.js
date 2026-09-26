@@ -91,6 +91,10 @@ const env = {
     boldItalic: process.env.CODE_PDF_FONT_BOLD_ITALIC || ''
   },
 
+  // Optional AI explanations in code PDFs. Off unless BOTH are set.
+  llmApiKey: process.env.LLM_API_KEY || '',
+  llmModel: process.env.LLM_MODEL || '',
+
   logLevel: process.env.LOG_LEVEL || (nodeEnv === 'test' ? 'silent' : 'info'),
 
   appRoot,

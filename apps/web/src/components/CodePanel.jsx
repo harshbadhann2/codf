@@ -11,7 +11,9 @@ export default function CodePanel({ onSubmit, isBusy, maxFileSizeMb }) {
     section: '',
     language: '',
     code: '',
-    file: null
+    file: null,
+    // Off by default: the code only goes to the AI provider if the student opts in.
+    explain: false
   });
 
   const update = (patch) => setForm((current) => ({ ...current, ...patch }));
@@ -99,6 +101,22 @@ export default function CodePanel({ onSubmit, isBusy, maxFileSizeMb }) {
           helpText={`Max ${maxFileSizeMb} MB. Source files and Jupyter notebooks (.ipynb) are supported.`}
         />
       </div>
+
+      <label className="flex cursor-pointer items-start gap-2.5 rounded-[var(--radius-md)] border border-[var(--line)] bg-[rgb(var(--surface)/0.5)] p-3">
+        <input
+          type="checkbox"
+          checked={form.explain}
+          onChange={(event) => update({ explain: event.target.checked })}
+          className="focus-ring mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent)]"
+        />
+        <span className="text-xs leading-relaxed">
+          <span className="font-semibold">Include AI explanation</span>
+          <span className="block text-[var(--ink-faint)]">
+            Adds a short summary, approach and time/space complexity under your code. Your code is sent to an AI
+            model to write it.
+          </span>
+        </span>
+      </label>
 
       <SubmitButton disabled={!canSubmit || isBusy} busy={isBusy}>
         {isBusy ? 'Generating…' : 'Generate PDF'}

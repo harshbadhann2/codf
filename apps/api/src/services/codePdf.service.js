@@ -12,6 +12,7 @@ const { sanitizeBaseName } = require('../utils/sanitizeFilename');
 const { safeUnlink } = require('../utils/fileCleanup');
 const { ensureWorkspace } = require('../utils/workspace');
 const { parseHighlightedTokens, tokenColor, isCommentToken, isBoldToken } = require('../utils/codeTokens');
+const { sanitize } = require('./markdownPdf/inline');
 
 const PAGE_SIZE = 'LETTER';
 const MARGIN = 56;
@@ -30,6 +31,10 @@ const LINE_HEIGHT = 13.2;
 const FOOTER_SIZE = 8;
 const FOOTER_BAND = 18;
 const WRAP_INDENT = 10;
+const EXPLANATION_HEADING = 'AI explanation';
+const EXPLANATION_GAP = 22;
+// Start the explanation on a fresh page rather than strand its heading at the bottom.
+const EXPLANATION_MIN_SPACE = 110;
 
 function firstExistingPath(candidates) {
   for (const candidate of candidates) {
@@ -345,6 +350,42 @@ function stampFooters(doc, label) {
 }
 
 /**
+ * Prints the AI explanation below the code listing, using PDFKit's own text
+ * flow so a long explanation continues onto new pages by itself. Model output
+ * goes through the Markdown renderer's `sanitize`, because the standard PDF
+ * fonts can only draw WinAnsi and would print "→" as an unrelated glyph.
+ */
+function drawExplanation(doc, explanation, top) {
+  const width = doc.page.width - MARGIN * 2;
+  let y = top;
+
+  if (y + EXPLANATION_MIN_SPACE > doc.page.height - MARGIN) {
+    doc.addPage({ size: PAGE_SIZE, margin: MARGIN });
+    y = MARGIN;
+  }
+
+  const stats = { droppedGlyphs: 0 };
+  const entries = [
+    ['What it does', explanation.summary],
+    ['Approach', explanation.approach],
+    ['Time complexity', explanation.complexity.time],
+    ['Space complexity', explanation.complexity.space]
+  ];
+
+  doc.font('Helvetica-Bold').fontSize(SECTION_SIZE + 1).fillColor('#0f172a');
+  doc.text(EXPLANATION_HEADING, MARGIN, y, { width });
+  doc.moveDown(0.6);
+
+  entries.forEach(([label, value]) => {
+    doc.font('Helvetica-Bold').fontSize(FONT_SIZE).fillColor('#334155');
+    doc.text(label, MARGIN, doc.y, { width });
+    doc.font('Helvetica').fontSize(FONT_SIZE).fillColor('#334155');
+    doc.text(sanitize(value, stats), MARGIN, doc.y, { width, lineGap: 1.5 });
+    doc.moveDown(0.6);
+  });
+}
+
+/**
  * Renders the document: wrap once, slice into pages, then paint. Measuring
  * before drawing is what lets the panel on the final page shrink to fit its
  * content instead of always running to the bottom of the sheet.
@@ -364,6 +405,7 @@ function renderDocument(doc, lines, options) {
 
   let cursor = 0;
   let isFirstPage = true;
+  let panelBottom = 0;
 
   while (cursor < rows.length || isFirstPage) {
     const geometry = isFirstPage ? firstGeometry : restGeometry;
@@ -380,12 +422,17 @@ function renderDocument(doc, lines, options) {
 
     cursor += capacity;
     isFirstPage = false;
+    panelBottom = geometry.y + height;
+  }
+
+  if (options.explanation) {
+    drawExplanation(doc, options.explanation, panelBottom + EXPLANATION_GAP);
   }
 
   return rows.length;
 }
 
-async function generateCodePdf({ code, filename, language, title, section }) {
+async function generateCodePdf({ code, filename, language, title, section, explanation }) {
   if (typeof code !== 'string' || !code.trim()) {
     throw AppError.badRequest('Code content is required.');
   }
@@ -437,7 +484,8 @@ async function generateCodePdf({ code, filename, language, title, section }) {
       try {
         renderDocument(doc, lines, {
           title: String(title || '').trim(),
-          section: String(section || '').trim()
+          section: String(section || '').trim(),
+          explanation
         });
 
         stampFooters(doc, `${safeName} · ${highlighted.language}`);

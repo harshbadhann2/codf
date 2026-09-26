@@ -125,7 +125,14 @@ export default function App() {
       run('document', () =>
         convertCodeFileToPdf(
           form.file,
-          { filename: form.filename, title: form.title, section: form.section, language: form.language },
+          {
+            filename: form.filename,
+            title: form.title,
+            section: form.section,
+            language: form.language,
+            // Omitted when off (formDataFor drops empty values), so that request is unchanged.
+            explain: form.explain ? 'true' : ''
+          },
           { onProgress: setProgress }
         )
       );
@@ -138,7 +145,8 @@ export default function App() {
         title: form.title,
         section: form.section,
         language: form.language || undefined,
-        code: form.code
+        code: form.code,
+        explain: form.explain || undefined
       })
     );
   }
