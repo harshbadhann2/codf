@@ -31,21 +31,13 @@ test('health reports both extraction routes', async () => {
 });
 
 test('a non-image is refused before OCR is attempted', async () => {
-  const capabilities = await getCapabilities();
-
+  // The upload is validated before the capability guard runs (see
+  // conversion.routes.js), so this is a 400 whether or not Tesseract exists.
   const { status, body } = await filePost('/api/convert/image-to-text', {
     fileName: 'fake.png',
     contents: 'this is plain text pretending to be a png',
     type: 'image/png'
   });
-
-  if (!capabilities.imageToText.available) {
-    // Without Tesseract the capability guard answers first, which is itself
-    // the behaviour worth having: a clear 503 rather than a crash.
-    assert.equal(status, 503);
-    assert.equal(body.error.code, 'capability_unavailable');
-    return;
-  }
 
   assert.equal(status, 400);
   assert.match(body.error.message, /not a valid image/i);
