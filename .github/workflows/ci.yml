@@ -23,6 +23,16 @@ jobs:
           cache: npm
           cache-dependency-path: apps/api/package-lock.json
 
+      # Same OCR packages as the runtime stage of apps/api/Dockerfile, so the
+      # OCR tests exercise real Tesseract instead of only the missing-engine path.
+      - name: Install Tesseract
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            tesseract-ocr tesseract-ocr-eng tesseract-ocr-osd
+          tesseract --version
+          tesseract --list-langs
+
       - name: Install
         run: npm ci --include=optional
         working-directory: apps/api
@@ -33,7 +43,8 @@ jobs:
 
       # Runs without LibreOffice or Python installed, which is exactly the
       # point: the suite must pass on a runtime missing those engines, proving
-      # the capability degradation works rather than crashing.
+      # the capability degradation works rather than crashing. Tesseract is
+      # installed above; the Docker job checks the full engine set.
       - name: Test
         run: npm test
         working-directory: apps/api
